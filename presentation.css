@@ -3,10 +3,10 @@
 .pres-toggle {
   position: fixed;
   top: 16px;
-  right: 16px;
+  right: 56px;
   z-index: 999;
-  background: var(--bg-card, #1a1a2e);
-  border: 1px solid var(--border, #333);
+  background: var(--surface);
+  border: 1px solid var(--border-bright);
   border-radius: 8px;
   padding: 6px 10px;
   font-size: 18px;
@@ -27,25 +27,25 @@
   justify-content: center;
   gap: 16px;
   padding: 12px;
-  background: var(--bg-body, #0f0f1a);
-  border-top: 1px solid var(--border, #333);
+  background: var(--bg);
+  border-top: 1px solid var(--border-bright);
   font-family: 'DM Sans', sans-serif;
 }
 #pres-bar button {
-  background: var(--bg-card, #1a1a2e);
-  border: 1px solid var(--border, #333);
+  background: var(--surface);
+  border: 1px solid var(--border-bright);
   border-radius: 6px;
-  color: var(--fg, #e0e0e0);
+  color: var(--text);
   padding: 6px 14px;
   font-size: 14px;
   cursor: pointer;
   transition: background 0.15s;
 }
 #pres-bar button:hover {
-  background: var(--bg-hover, #252540);
+  background: var(--surface-elevated);
 }
 #pres-counter {
-  color: var(--fg-dim, #888);
+  color: var(--text-dim);
   font-size: 14px;
   font-variant-numeric: tabular-nums;
   min-width: 60px;
