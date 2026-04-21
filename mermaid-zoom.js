@@ -136,7 +136,7 @@ function initDiagram(shell) {
     svg.style.width = (svgW * zoom) + 'px';
     svg.style.height = (svgH * zoom) + 'px';
     canvas.style.transform = `translate(${panX}px, ${panY}px)`;
-    label.textContent = Math.round(zoom * 100) + '% \u2014 ' + fitMode;
+    label.textContent = Math.round(zoom * 100) + '%';
   }
 
   function canPan() {
@@ -226,9 +226,8 @@ function initDiagram(shell) {
 
   function setAdaptiveHeight() {
     if (!svgW) return;
-    const usableW = Math.max(280, wrap.getBoundingClientRect().width - 2);
-    // Height = SVG aspect ratio at 100% zoom, capped at a sensible max
-    const naturalH = (svgH / svgW) * usableW + config.fitPadding * 2;
+    // Height = SVG natural height at 100% zoom + padding, capped sensibly
+    const naturalH = svgH + config.fitPadding * 2;
     const maxVp = Math.floor(innerHeight * config.maxHeightVh);
     const hardMax = Math.min(config.maxHeightPx, maxVp);
     wrap.style.height = Math.round(Math.min(naturalH, hardMax)) + 'px';
