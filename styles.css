@@ -200,6 +200,8 @@ body {
   gap: 0 40px;
 }
 .main { min-width: 0; grid-column: 2; }
+.main p + p, .main p + ul, .main ul + p,
+.main p + .diagram-shell, .main .diagram-shell + p { margin-top: 16px; }
 
 /* ============ TOC ============ */
 .toc {
