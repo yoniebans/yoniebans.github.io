@@ -1,0 +1,27 @@
+name: Deploy
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+permissions:
+  pull-requests: write
+  contents: write
+
+concurrency:
+  group: preview-pages-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: rajyan/preview-pages@v1
+        with:
+          source-dir: .
+          pr-per-commit: "false"
+          pr-comment: sticky
+          branch-per-commit: "false"

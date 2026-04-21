@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Atlas — a shared mental model for human-agent collaboration</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,700;1,400&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/styles.css">
+  <link rel="stylesheet" href="/presentation.css">
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+  <script>mermaid.initialize({ startOnLoad: false, theme: 'dark', themeVariables: { primaryColor: '#1e293b', primaryTextColor: '#e2e8f0', lineColor: '#475569', secondaryColor: '#0f172a', tertiaryColor: '#1e293b' }});</script>
+</head>
+<body>
+  <div class="wrap">
+    <!-- Sidebar TOC -->
+    <nav class="toc">
+      <div class="toc-title">Atlas</div>
+      <ul>
+        <li><a href="#overview">Overview</a></li>
+        <li><a href="#the-gap">The gap</a></li>
+        <li><a href="#what-atlas-is">What atlas is</a></li>
+        <li><a href="#how-it-works">How it works</a></li>
+        <li><a href="#the-abstraction-shift">The abstraction shift</a></li>
+        <li><a href="#drift-detection">Staying honest</a></li>
+        <li><a href="#for-any-project">For any project</a></li>
+        <li><a href="#the-thesis">The thesis</a></li>
+      </ul>
+      <a href="/" class="toc-home">← all posts</a>
+    </nav>
+
+    <!-- Main content -->
+    <main class="main">
+
+      <!-- SLIDE 1: Overview -->
+      <section id="overview">
+        <div class="sec-head"><span class="dot" style="background:var(--accent)"></span> Overview</div>
+        <h1>The Atlas</h1>
+        <p class="section-desc">A shared mental model for human-agent collaboration.</p>
+
+        <div class="callout" style="margin: 24px 0;">
+          <em>The agent does the work. You hold the shape.</em>
+        </div>
+
+        <p>When an AI agent writes 99% of the code, how does the human stay useful? Not by reading every line — that's the old model. The human steers <strong>the shape</strong>: what talks to what, how data flows, where the boundaries are. The atlas is that shape, materialized as an artifact both can read.</p>
+      </section>
+
+      <hr>
+
+      <!-- SLIDE 2: The Gap -->
+      <section id="the-gap">
+        <div class="sec-head"><span class="dot" style="background:var(--rose)"></span> The Problem</div>
+        <h2>The gap no one holds</h2>
+
+        <p>Three layers of understanding exist in any software project:</p>
+
+        <div class="diagram-shell">
+          <div class="mermaid-wrap">
+            <div class="mermaid-viewport">
+              <div class="mermaid-canvas">
+                <script type="text/plain" class="diagram-source">
+graph TD
+    human["👤 Human<br/><small>Vision layer — intent, direction,<br/>business goals</small>"]
+    gap["❓ The gap<br/><small>Structural shape — what talks to what,<br/>how data flows, where boundaries are</small>"]
+    agent["🤖 Agent<br/><small>Code layer — line-level implementation,<br/>exact file contents, syntax</small>"]
+
+    human -.->|"steers"| gap
+    gap -.->|"grounds"| agent
+
+    classDef person fill:#d9770611,stroke:#d9770644,stroke-width:1.5px
+    classDef middle fill:#f59e0b11,stroke:#f59e0b44,stroke-width:2px,stroke-dasharray: 5 5
+    classDef machine fill:#0d948822,stroke:#0d9488,stroke-width:1.5px
+
+    class human person
+    class gap middle
+    class agent machine
+                </script>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <p>The human understands intent at vision-level. The agent understands code at line-level. <strong>Nobody holds the middle layer</strong> — the structural shape of the system.</p>
+
+        <p>Without it, three things go wrong:</p>
+
+        <div class="kpi-strip" style="margin: 16px 0;">
+          <div class="kpi-card">
+            <div class="kpi-label">Stale steering</div>
+            <div class="kpi-desc">The human makes architecture decisions against a vague or outdated picture</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">No memory</div>
+            <div class="kpi-desc">The agent re-derives structure from code each session — sees trees, no forest map</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">No onramp</div>
+            <div class="kpi-desc">New humans, new agent instances, even you after a month — no fast path to the mental model</div>
+          </div>
+        </div>
+      </section>
+
+      <hr>
+
+      <!-- SLIDE 3: What Atlas Is -->
+      <section id="what-atlas-is">
+        <div class="sec-head"><span class="dot" style="background:var(--teal)"></span> The Concept</div>
+        <h2>What an atlas is</h2>
+
+        <p>An atlas is that middle layer, materialized. Not docs. Not a README. A <strong>shared mental model as an artifact</strong> — interactive HTML pages with C4 and UML diagrams, orienting prose, and source-linked code references.</p>
+
+        <div class="callout">
+          Both the human and the agent read and write the same artifact. There's no "human docs" vs "agent context." Same pages, both audiences.
+        </div>
+
+        <p>It sits between:</p>
+        <div class="ve-card" style="margin: 16px 0;">
+          <table class="schema-table">
+            <thead><tr><th>Layer</th><th>What it is</th><th>Problem</th></tr></thead>
+            <tbody>
+              <tr><td><strong>Human prose</strong></td><td>README, docs site, wiki</td><td>High-level but lossy, often stale, prone to essays</td></tr>
+              <tr><td><strong>Atlas</strong></td><td>Structural diagrams + orienting prose</td><td>← the middle ground</td></tr>
+              <tr><td><strong>Machine detail</strong></td><td>Code, schemas, configs</td><td>Precise but no viewpoint, no helicopter view</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <p>An atlas is optimized for <strong>orientation</strong> — building the mental model on first contact. Mastery comes afterward, through the code.</p>
+      </section>
+
+      <hr>
+
+      <!-- SLIDE 4: How It Works -->
+      <section id="how-it-works">
+        <div class="sec-head"><span class="dot" style="background:var(--emerald)"></span> Mechanics</div>
+        <h2>How it works</h2>
+
+        <p>The agent IS the build step. There is no intermediate format. The agent produces HTML directly using a shared design system, the human reviews in browser, the agent patches.</p>
+
+        <div class="pipeline" style="margin: 20px 0;">
+          <div class="pipeline-step">
+            <div class="step-name">1. Discovery</div>
+            <div class="step-detail">Agent scans the codebase — entry points, containers, data models, infrastructure</div>
+          </div>
+          <div class="pipeline-arrow">→</div>
+          <div class="pipeline-step">
+            <div class="step-name">2. Propose</div>
+            <div class="step-detail">Agent drafts an atlas plan with batched questions. "Here's what I'd do — confirm or correct."</div>
+          </div>
+          <div class="pipeline-arrow">→</div>
+          <div class="pipeline-step">
+            <div class="step-name">3. Author</div>
+            <div class="step-detail">Agent writes HTML pages — C4 diagrams, sequence flows, data models, orienting prose</div>
+          </div>
+          <div class="pipeline-arrow">→</div>
+          <div class="pipeline-step">
+            <div class="step-name">4. Review</div>
+            <div class="step-detail">Human opens pages in browser. Feedback is shape-level: "this section is a wall of text", "missing X"</div>
+          </div>
+        </div>
+
+        <p>A typical atlas has 2–4 pages, each scannable in ~2 minutes. The whole thing is traversable in ~10 minutes.</p>
+
+        <div class="ve-card" style="margin: 16px 0;">
+          <table class="schema-table">
+            <thead><tr><th>Page</th><th>What it covers</th><th>When needed</th></tr></thead>
+            <tbody>
+              <tr><td><strong>System architecture</strong></td><td>C4 L1 context + L2 containers + L3 components</td><td>Always</td></tr>
+              <tr><td><strong>Data model</strong></td><td>ER diagrams, schema tables, wire formats</td><td>When persistent state exists</td></tr>
+              <tr><td><strong>Interaction sequences</strong></td><td>One sequence diagram per key flow</td><td>When 3+ flows define the system</td></tr>
+              <tr><td><strong>Documentation map</strong></td><td>Mental model, extension points, design principles</td><td>When complexity warrants it</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <hr>
+
+      <!-- SLIDE 5: The Abstraction Shift -->
+      <section id="the-abstraction-shift">
+        <div class="sec-head"><span class="dot" style="background:var(--sky)"></span> The Shift</div>
+        <h2>Steering at the right level</h2>
+
+        <p>When the agent proposes a change — new tool, new gateway adapter, refactored data model — you evaluate it against the atlas. Does this new container make sense in the L2 view? Does this new flow belong on the sequence diagrams page?</p>
+
+        <div class="callout">
+          You're reviewing architecture, not diffs. The diffs are the agent's problem.
+        </div>
+
+        <p>This is proportional to how humans actually work with AI agents. You're not going to read every line of a 200-file PR. But you absolutely can look at an updated system-architecture diagram and say <em>"wait, why is there a new external actor here?"</em></p>
+
+        <div class="diagram-shell">
+          <div class="mermaid-wrap">
+            <div class="mermaid-viewport">
+              <div class="mermaid-canvas">
+                <script type="text/plain" class="diagram-source">
+graph LR
+    subgraph old["Traditional code review"]
+        pr["200-file PR"] --> read["Read every diff"] --> approve["Approve / reject"]
+    end
+
+    subgraph new["Atlas-level review"]
+        change["Agent proposes change"] --> atlas["Check atlas diagrams"] --> shape["Shape makes sense?"] --> merge["Merge"]
+    end
+
+    classDef trad fill:#dc262611,stroke:#dc262644,stroke-width:1.5px
+    classDef modern fill:#0d948822,stroke:#0d9488,stroke-width:1.5px
+
+    class pr,read,approve trad
+    class change,atlas,shape,merge modern
+                </script>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <p>The atlas doesn't replace code review. It replaces the mental overhead of keeping the whole system in your head. The agent maintains that picture — you verify it's still right.</p>
+      </section>
+
+      <hr>
+
+      <!-- SLIDE 6: Drift Detection -->
+      <section id="drift-detection">
+        <div class="sec-head"><span class="dot" style="background:var(--amber)"></span> Staying Honest</div>
+        <h2>Automated drift detection</h2>
+
+        <p>An atlas that lies is worse than no atlas. The obvious failure mode: the code evolves, the atlas doesn't, and now you're steering against a stale picture.</p>
+
+        <p>The solution is a <strong>drift daemon</strong> — a daily cron job that:</p>
+
+        <div class="pipeline" style="margin: 20px 0;">
+          <div class="pipeline-step">
+            <div class="step-name">1. Structural scan</div>
+            <div class="step-detail">Git diff since last check — new directories, infrastructure changes, entry point changes. Cheap, no LLM.</div>
+          </div>
+          <div class="pipeline-arrow">→</div>
+          <div class="pipeline-step">
+            <div class="step-name">2. Agent evaluation</div>
+            <div class="step-detail">If structural changes found, an agent reads the atlas and the diff. Decides which pages are stale and why.</div>
+          </div>
+          <div class="pipeline-arrow">→</div>
+          <div class="pipeline-step">
+            <div class="step-name">3. Update PR</div>
+            <div class="step-detail">Agent updates atlas HTML, opens a PR. Human reviews and merges — or rejects.</div>
+          </div>
+        </div>
+
+        <p>The atlas stays honest automatically. The human stays in the approval loop via PRs, not manual auditing.</p>
+
+        <div class="callout">
+          An honest snapshot is worth more than a precise but stale one. The goal isn't real-time accuracy — it's trustworthiness as a mental model.
+        </div>
+      </section>
+
+      <hr>
+
+      <!-- SLIDE 7: For Any Project -->
+      <section id="for-any-project">
+        <div class="sec-head"><span class="dot" style="background:var(--indigo)"></span> Beyond One Project</div>
+        <h2>A pattern for any codebase</h2>
+
+        <p>Atlas isn't project-specific. It's a <strong>pattern for how humans and AI agents collaborate on any codebase</strong>.</p>
+
+        <div class="kpi-strip" style="margin: 16px 0;">
+          <div class="kpi-card">
+            <div class="kpi-label">Brownfield</div>
+            <div class="kpi-desc">Agent reverse-engineers the atlas from existing code. Proposes it, you confirm or correct.</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">Greenfield</div>
+            <div class="kpi-desc">Atlas grows alongside the system. Containers get diagrammed as they're committed.</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">Returning</div>
+            <div class="kpi-desc">Open the atlas after a month away. 10 minutes. Mental model rebuilt. Spot-check against code.</div>
+          </div>
+        </div>
+
+        <p>A shared mental model that:</p>
+        <ul>
+          <li><strong>Survives across sessions</strong> — the agent reads it on entry</li>
+          <li><strong>Survives across humans</strong> — new team member reads it on day one</li>
+          <li><strong>Stays honest via automated drift detection</strong></li>
+          <li><strong>Scales with the project</strong> — add pages as complexity grows, prune when you simplify</li>
+        </ul>
+
+        <p>You're not maintaining a wiki that drifts the moment someone forgets to update it. You're maintaining <strong>the shape</strong> — and the agent maintains it for you, with you in the approval loop via PRs.</p>
+      </section>
+
+      <hr>
+
+      <!-- SLIDE 8: The Thesis -->
+      <section id="the-thesis">
+        <div class="sec-head"><span class="dot" style="background:var(--accent)"></span> The Thesis</div>
+        <h2>The agent sees the trees. You see the horizon.</h2>
+
+        <p>The atlas is the map in between — the layer where you both agree on what the forest looks like. Without it, you're steering blind and the agent is building without a plan.</p>
+
+        <div class="callout" style="margin: 24px 0; font-size: 1.05rem;">
+          Most AI coding tools give you a faster typist. An atlas gives you a <strong>collaborator that maintains a shared understanding of your system</strong> — and keeps it honest when the code changes.
+        </div>
+
+        <p>That's not a feature. It's a philosophy of collaboration.</p>
+
+        <hr style="margin: 40px 0;">
+        <div class="companion-grid">
+          <a class="companion-link" href="/">
+            <div class="companion-link__title">← All posts</div>
+            <div class="companion-link__desc">Back to the index.</div>
+          </a>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <script src="/mermaid-zoom.js" defer></script>
+  <script src="/scrollspy.js" defer></script>
+  <script src="/presentation.js" defer></script>
+</body>
+</html>
