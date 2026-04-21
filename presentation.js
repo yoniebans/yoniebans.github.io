@@ -42,9 +42,7 @@
     buildSlides();
     if (slides.length === 0) return;
 
-    document.body.classList.add('presentation-mode');
-
-    // Find which slide is currently in view
+    // Find which slide is currently in view BEFORE hiding
     const scrollY = window.scrollY + window.innerHeight / 3;
     let closest = 0;
     for (let i = 0; i < slides.length; i++) {
@@ -53,6 +51,7 @@
       }
     }
 
+    document.body.classList.add('presentation-mode');
     showSlide(closest);
 
     // Show controls
