@@ -26,10 +26,10 @@ if (!mermaid) {
 
 const config = {
   fitPadding: 28,
-  minHeight: 360,
-  maxHeightPx: 960,
+  minHeight: 120,
+  maxHeightPx: 720,
   maxHeightVh: 0.84,
-  maxInitialZoom: 1.8,
+  maxInitialZoom: 1.0,
   minZoom: 0.08,
   maxZoom: 6.5,
   zoomStep: 0.14,
