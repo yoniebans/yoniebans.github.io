@@ -54,11 +54,24 @@
 
         <p>Three layers of understanding exist in any software project:</p>
 
-        <div class="diagram-shell">
-          <div class="mermaid-wrap">
+        <section class="diagram-shell">
+          <p class="diagram-shell__hint">
+            Ctrl/Cmd + wheel to zoom &middot; Scroll to pan &middot; Drag when zoomed &middot; Double-click to fit
+          </p>
+          <div class="mermaid-wrap" style="min-height:400px">
+            <div class="zoom-controls">
+              <button type="button" data-action="zoom-in" title="Zoom in">+</button>
+              <button type="button" data-action="zoom-out" title="Zoom out">&minus;</button>
+              <button type="button" data-action="zoom-fit" title="Smart fit">&#8634;</button>
+              <button type="button" data-action="zoom-one" title="1:1 zoom">1:1</button>
+              <button type="button" data-action="zoom-expand" title="Open full size">&#x26F6;</button>
+              <span class="zoom-label">Loading...</span>
+            </div>
             <div class="mermaid-viewport">
-              <div class="mermaid-canvas">
-                <script type="text/plain" class="diagram-source">
+              <div class="mermaid mermaid-canvas"></div>
+            </div>
+          </div>
+          <script type="text/plain" class="diagram-source">
 graph TD
     human["👤 Human<br/><small>Vision layer — intent, direction,<br/>business goals</small>"]
     gap["❓ The gap<br/><small>Structural shape — what talks to what,<br/>how data flows, where boundaries are</small>"]
@@ -74,11 +87,8 @@ graph TD
     class human person
     class gap middle
     class agent machine
-                </script>
-              </div>
-            </div>
-          </div>
-        </div>
+          </script>
+        </section>
 
         <p>The human understands intent at vision-level. The agent understands code at line-level. <strong>Nobody holds the middle layer</strong> — the structural shape of the system.</p>
 
@@ -189,11 +199,24 @@ graph TD
 
         <p>This is proportional to how humans actually work with AI agents. You're not going to read every line of a 200-file PR. But you absolutely can look at an updated system-architecture diagram and say <em>"wait, why is there a new external actor here?"</em></p>
 
-        <div class="diagram-shell">
-          <div class="mermaid-wrap">
+        <section class="diagram-shell">
+          <p class="diagram-shell__hint">
+            Ctrl/Cmd + wheel to zoom &middot; Scroll to pan &middot; Drag when zoomed &middot; Double-click to fit
+          </p>
+          <div class="mermaid-wrap" style="min-height:400px">
+            <div class="zoom-controls">
+              <button type="button" data-action="zoom-in" title="Zoom in">+</button>
+              <button type="button" data-action="zoom-out" title="Zoom out">&minus;</button>
+              <button type="button" data-action="zoom-fit" title="Smart fit">&#8634;</button>
+              <button type="button" data-action="zoom-one" title="1:1 zoom">1:1</button>
+              <button type="button" data-action="zoom-expand" title="Open full size">&#x26F6;</button>
+              <span class="zoom-label">Loading...</span>
+            </div>
             <div class="mermaid-viewport">
-              <div class="mermaid-canvas">
-                <script type="text/plain" class="diagram-source">
+              <div class="mermaid mermaid-canvas"></div>
+            </div>
+          </div>
+          <script type="text/plain" class="diagram-source">
 graph LR
     subgraph old["Traditional code review"]
         pr["200-file PR"] --> read["Read every diff"] --> approve["Approve / reject"]
@@ -208,11 +231,8 @@ graph LR
 
     class pr,read,approve trad
     class change,atlas,shape,merge modern
-                </script>
-              </div>
-            </div>
-          </div>
-        </div>
+          </script>
+        </section>
 
         <p>The atlas doesn't replace code review. It replaces the mental overhead of keeping the whole system in your head. The agent maintains that picture — you verify it's still right.</p>
       </section>
