@@ -57,9 +57,17 @@ body.presentation-mode .toc { display: none; }
 body.presentation-mode .main {
   max-width: 900px;
   margin: 0 auto;
+  padding-top: 60px;
   padding-bottom: 80px;
 }
 body.presentation-mode .wrap {
+  display: block;
+}
+body.presentation-mode .main > hr { display: none; }
+body.presentation-mode .main > section {
+  display: none;
+}
+body.presentation-mode .main > section.slide-active {
   display: block;
 }
 

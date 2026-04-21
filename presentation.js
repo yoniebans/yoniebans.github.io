@@ -24,11 +24,11 @@
     current = index;
 
     slides.forEach((s, i) => {
-      s.style.display = i === current ? '' : 'none';
+      s.classList.toggle('slide-active', i === current);
     });
 
     updateCounter();
-    slides[current].scrollIntoView({ behavior: 'instant', block: 'start' });
+    window.scrollTo(0, 0);
   }
 
   function updateCounter() {
@@ -64,7 +64,7 @@
     if (!active) return;
     active = false;
     document.body.classList.remove('presentation-mode');
-    slides.forEach(s => { s.style.display = ''; });
+    slides.forEach(s => { s.classList.remove('slide-active'); });
 
     const bar = document.getElementById('pres-bar');
     if (bar) bar.style.display = 'none';
