@@ -11,7 +11,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: preview-pages-${{ github.ref }}
+  group: pages-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -19,9 +19,42 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: rajyan/preview-pages@v1
+
+      # For PRs: deploy to /pr-N/ subdirectory
+      - name: Deploy PR preview
+        if: github.event_name == 'pull_request'
+        uses: rajyan/preview-pages@v1
         with:
           source-dir: .
           pr-per-commit: "false"
           pr-comment: sticky
           branch-per-commit: "false"
+
+      # For main: deploy to root
+      - name: Deploy main to root
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+
+          # Save current content
+          TMPDIR=$(mktemp -d)
+          # Copy everything except .git and .github
+          rsync -a --exclude='.git' --exclude='.github' . "$TMPDIR/"
+
+          # Switch to gh-pages
+          git fetch origin gh-pages:gh-pages 2>/dev/null || true
+          git checkout gh-pages 2>/dev/null || git checkout --orphan gh-pages
+
+          # Clear root but preserve pr-* directories
+          find . -maxdepth 1 ! -name '.' ! -name '.git' ! -name 'pr-*' -exec rm -rf {} +
+
+          # Copy new content to root
+          rsync -a "$TMPDIR/" .
+          rm -rf "$TMPDIR"
+
+          git add .
+          if ! git diff --cached --quiet; then
+            git commit -m "Deploy main @ $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+            git push origin gh-pages
+          fi
