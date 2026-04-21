@@ -171,11 +171,11 @@ function initDiagram(shell) {
 
   function fitDiagram() {
     if (!svgW) return;
-    const fit = computeSmartFit();
-    zoom = fit.zoom;
-    fitMode = fit.mode;
-    panX = (viewport.clientWidth - svgW * zoom) / 2;
-    panY = (viewport.clientHeight - svgH * zoom) / 2;
+    // Default: 100% zoom, top-left aligned with padding
+    zoom = 1.0;
+    fitMode = '100%';
+    panX = config.fitPadding;
+    panY = config.fitPadding;
     applyTransform();
   }
 
@@ -227,10 +227,11 @@ function initDiagram(shell) {
   function setAdaptiveHeight() {
     if (!svgW) return;
     const usableW = Math.max(280, wrap.getBoundingClientRect().width - 2);
-    const idealH = (svgH / svgW) * usableW + config.fitPadding * 2;
+    // Height = SVG aspect ratio at 100% zoom, capped at a sensible max
+    const naturalH = (svgH / svgW) * usableW + config.fitPadding * 2;
     const maxVp = Math.floor(innerHeight * config.maxHeightVh);
-    const hardMax = Math.min(config.maxHeightPx, Math.max(config.minHeight + 40, maxVp));
-    wrap.style.height = Math.round(clamp(idealH, config.minHeight, hardMax)) + 'px';
+    const hardMax = Math.min(config.maxHeightPx, maxVp);
+    wrap.style.height = Math.round(Math.min(naturalH, hardMax)) + 'px';
   }
 
   function getDiagramTitle() {
