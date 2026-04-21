@@ -45,7 +45,11 @@ addEventListener('mouseup', () => {
   activeDrag = null;
 });
 
-const isDark = matchMedia('(prefers-color-scheme: dark)').matches;
+function getIsDark() {
+  return document.documentElement.getAttribute('data-theme') === 'dark' ||
+    (!document.documentElement.getAttribute('data-theme') && matchMedia('(prefers-color-scheme: dark)').matches);
+}
+let isDark = getIsDark();
 
 mermaid.initialize({
   startOnLoad: false,
@@ -406,9 +410,36 @@ function initDiagram(shell) {
     }
   }).observe(wrap);
 
+  shell.__render = render;
   render();
 }
 
 document.querySelectorAll('.diagram-shell').forEach(initDiagram);
+
+// Expose re-render for theme toggle
+window.__reRenderDiagrams = function () {
+  isDark = getIsDark();
+  mermaid.initialize({
+    startOnLoad: false,
+    theme: 'base',
+    fontFamily: "'DM Sans', system-ui, sans-serif",
+    themeVariables: {
+      primaryColor: isDark ? '#1e3a5f' : '#dbeafe',
+      primaryBorderColor: isDark ? '#38bdf8' : '#0284c7',
+      primaryTextColor: isDark ? '#e2e8f0' : '#0f172a',
+      secondaryColor: isDark ? '#1a3332' : '#ccfbf1',
+      secondaryBorderColor: isDark ? '#2dd4bf' : '#0d9488',
+      secondaryTextColor: isDark ? '#e2e8f0' : '#0f172a',
+      tertiaryColor: isDark ? '#2e2618' : '#fef3c7',
+      tertiaryBorderColor: isDark ? '#fbbf24' : '#d97706',
+      tertiaryTextColor: isDark ? '#e2e8f0' : '#0f172a',
+      lineColor: isDark ? '#64748b' : '#94a3b8',
+    }
+  });
+  document.querySelectorAll('.diagram-shell').forEach(function (shell) {
+    const renderFn = shell.__render;
+    if (renderFn) renderFn();
+  });
+};
 
 })();
