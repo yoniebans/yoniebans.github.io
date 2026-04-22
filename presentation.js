@@ -85,6 +85,27 @@
     if (e.key === 'Escape') { exit(); e.preventDefault(); }
   });
 
+  // Touch swipe (presentation mode only)
+  let touchStartX = 0;
+  let touchStartY = 0;
+
+  document.addEventListener('touchstart', function (e) {
+    if (!active) return;
+    touchStartX = e.changedTouches[0].clientX;
+    touchStartY = e.changedTouches[0].clientY;
+  }, { passive: true });
+
+  document.addEventListener('touchend', function (e) {
+    if (!active) return;
+    const dx = e.changedTouches[0].clientX - touchStartX;
+    const dy = e.changedTouches[0].clientY - touchStartY;
+    // Only trigger if horizontal swipe is dominant and long enough
+    if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.5) {
+      if (dx < 0) next();  // swipe left → next
+      else prev();          // swipe right → prev
+    }
+  }, { passive: true });
+
   // Inject control bar on DOMContentLoaded
   document.addEventListener('DOMContentLoaded', function () {
     // Toggle button in the page (top-right area)
