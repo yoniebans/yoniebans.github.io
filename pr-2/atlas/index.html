@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Atlas — making tacit knowledge shared</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,700;1,400&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/styles.css">
+  <link rel="stylesheet" href="/presentation.css">
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+  <script>mermaid.initialize({ startOnLoad: false, theme: 'dark', themeVariables: { primaryColor: '#1e293b', primaryTextColor: '#e2e8f0', lineColor: '#475569', secondaryColor: '#0f172a', tertiaryColor: '#1e293b' }});</script>
+  <script src="/theme.js"></script>
+</head>
+<body>
+  <div class="wrap">
+    <!-- Sidebar TOC -->
+    <nav class="toc">
+      <div class="toc-title">Atlas</div>
+      <ul>
+        <li><a href="#overview">Overview</a></li>
+        <li><a href="#the-problem">The problem</a></li>
+        <li><a href="#the-thesis">The thesis</a></li>
+        <li><a href="#the-artifact">The artifact</a></li>
+        <li><a href="#staying-honest">Staying honest</a></li>
+        <li><a href="#who-its-for">Who it's for</a></li>
+        <li><a href="#the-philosophy">The philosophy</a></li>
+      </ul>
+      <a href="/" class="toc-home">← all posts</a>
+    </nav>
+
+    <!-- Main content -->
+    <main class="main">
+
+      <!-- SLIDE 1: Overview -->
+      <section id="overview">
+        <div class="sec-head"><span class="dot" style="background:var(--accent)"></span> Overview</div>
+        <h1>The Atlas</h1>
+        <p class="section-desc">Making tacit knowledge shared — between humans and AI agents.</p>
+
+        <div class="callout" style="margin: 24px 0;">
+          <em>The agent writes the code. You hold the understanding.</em>
+        </div>
+
+        <p>Every experienced developer carries an understanding of their system that goes beyond documentation and code. The components, how they connect, where the boundaries are — knowledge built up over time, stored nowhere but grey matter. When an AI agent writes most of the code, that understanding becomes the most valuable thing the human has. And the hardest thing to share.</p>
+      </section>
+
+      <hr>
+
+      <!-- SLIDE 2: The Problem -->
+      <section id="the-problem">
+        <div class="sec-head"><span class="dot" style="background:var(--rose)"></span> The Problem</div>
+        <h2>Tacit knowledge is trapped</h2>
+
+        <p>Every experienced developer carries tacit knowledge of their system — the components, how they connect, where the boundaries are. Not documentation. Not code. <strong>The understanding itself</strong> (noesis). It's what lets you hear a proposed change and instantly know whether it fits or breaks something.</p>
+
+        <section class="diagram-shell">
+          <p class="diagram-shell__hint">
+            Ctrl/Cmd + wheel to zoom &middot; Scroll to pan &middot; Drag when zoomed &middot; Double-click to fit
+          </p>
+          <div class="mermaid-wrap">
+            <div class="zoom-controls">
+              <button type="button" data-action="zoom-in" title="Zoom in">+</button>
+              <button type="button" data-action="zoom-out" title="Zoom out">&minus;</button>
+              <button type="button" data-action="zoom-fit" title="Smart fit">&#8634;</button>
+              <button type="button" data-action="zoom-one" title="1:1 zoom">1:1</button>
+              <button type="button" data-action="zoom-expand" title="Open full size">&#x26F6;</button>
+              <span class="zoom-label">Loading...</span>
+            </div>
+            <div class="mermaid-viewport">
+              <div class="mermaid mermaid-canvas"></div>
+            </div>
+          </div>
+          <script type="text/plain" class="diagram-source">
+graph TD
+    human["👤 Human<br/><small>Tacit knowledge — intent, architecture,<br/>how the pieces fit together</small>"]
+    gap["🔒 Trapped<br/><small>Invisible, unshared, impossible to load<br/>into an agent's context</small>"]
+    agent["🤖 Agent<br/><small>Re-derives structure from code each session.<br/>Sees trees, never the forest.</small>"]
+
+    human -.->|"can't share"| gap
+    gap -.->|"can't load"| agent
+
+    classDef person fill:#d9770611,stroke:#d9770644,stroke-width:1.5px
+    classDef middle fill:#f59e0b11,stroke:#f59e0b44,stroke-width:2px,stroke-dasharray: 5 5
+    classDef machine fill:#0d948822,stroke:#0d9488,stroke-width:1.5px
+
+    class human person
+    class gap middle
+    class agent machine
+          </script>
+        </section>
+
+        <p>That knowledge is invisible, trapped in grey matter, impossible to share:</p>
+
+        <div class="grid-3" style="margin: 16px 0;">
+          <div class="ve-card c-rose">
+            <div class="ve-card__label">Yours is isolated</div>
+            <p>Your mental model might be brilliant — ahead of the code, mid-refactor in your head — but teammates can't see it. The agent can't see it. Multiple people on the same project carry different versions and don't know it.</p>
+          </div>
+          <div class="ve-card c-amber">
+            <div class="ve-card__label">The agent has none</div>
+            <p>It re-derives structure from code each session. Full architecture docs don't fit in context permanently. Without a compressed, loadable representation, every session starts from scratch.</p>
+          </div>
+          <div class="ve-card c-slate">
+            <div class="ve-card__label">Newcomers start cold</div>
+            <p>New humans, new agent instances, you after a month — no way to absorb the grey matter directly. Onboarding is archaeology.</p>
+          </div>
+        </div>
+      </section>
+
+      <hr>
+
+      <!-- SLIDE 3: The Thesis -->
+      <section id="the-thesis">
+        <div class="sec-head"><span class="dot" style="background:var(--teal)"></span> The Thesis</div>
+        <h2>Externalise it</h2>
+
+        <p>Make the tacit knowledge concrete, shared, and loadable. When both human and agent operate from the same compressed understanding, the collaboration changes fundamentally:</p>
+
+        <div class="grid-3" style="margin: 16px 0;">
+          <div class="ve-card c-teal">
+            <div class="ve-card__label">The human steers from a shared reference</div>
+            <p>Not from memory alone. Reviewable, challengeable, versionable. When you disagree with the agent's direction, you can point at the same picture and say <em>here</em>.</p>
+          </div>
+          <div class="ve-card c-emerald">
+            <div class="ve-card__label">The agent reasons with precision</div>
+            <p>It stops re-deriving and starts reasoning like someone who's been on the project for years. Every session. Context architecture — the understanding injected so reasoning is grounded, not reconstructed.</p>
+          </div>
+          <div class="ve-card c-indigo">
+            <div class="ve-card__label">Alignment becomes visible</div>
+            <p>When your picture and the agent's picture diverge, you can see it. Misalignment isn't assumed away — it's surfaced and resolved.</p>
+          </div>
+        </div>
+
+        <div class="callout">
+          That's not a documentation problem. It's a collaboration problem — and the solution is an artifact that both sides read, write, and trust.
+        </div>
+      </section>
+
+      <hr>
+
+      <!-- SLIDE 4: The Artifact -->
+      <section id="the-artifact">
+        <div class="sec-head"><span class="dot" style="background:var(--emerald)"></span> The Artifact</div>
+        <h2>A picture that speaks a thousand lines of code</h2>
+
+        <p>A compressed, visual representation of the system — diagrams, orienting prose, source-linked references. Not an exhaustive architecture document. Not a wiki. A representation optimised for <strong>loading tacit knowledge quickly</strong> and <strong>reasoning against it precisely</strong>.</p>
+
+        <div class="callout">
+          Both the human and the agent read and write the same pages. No "human version" and "agent version."
+        </div>
+
+        <p>For the agent, it's context architecture — the understanding injected into every session so reasoning is grounded, not reconstructed. For the human, it's the same thing it's always been: <strong>the picture in your head, except now it's outside your head</strong> and someone else can see it.</p>
+
+        <div class="ve-card" style="margin: 16px 0;">
+          <table class="schema-table">
+            <thead><tr><th>For the human</th><th>For the agent</th></tr></thead>
+            <tbody>
+              <tr><td>The mental model, externalised</td><td>Context architecture — loadable understanding</td></tr>
+              <tr><td>Review changes against the shape, not the code</td><td>Reason with the precision of long tenure, every session</td></tr>
+              <tr><td>Challenge, version, share with teammates</td><td>Ground planning and proposals in shared knowledge</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <hr>
+
+      <!-- SLIDE 5: Staying Honest -->
+      <section id="staying-honest">
+        <div class="sec-head"><span class="dot" style="background:var(--amber)"></span> Staying Honest</div>
+        <h2>An artifact that lies is worse than no artifact</h2>
+
+        <p>The obvious failure mode: the code evolves, the representation doesn't, and now you're steering against stale knowledge. Trust erodes the moment the artifact falls behind.</p>
+
+        <p>The solution is <strong>automated drift detection</strong>:</p>
+
+        <div class="pipeline" style="margin: 20px 0;">
+          <div class="pipeline-step">
+            <div class="step-name">1. Structural scan</div>
+            <div class="step-detail">Git diff since last check — new directories, infrastructure changes, entry points. Cheap, no LLM.</div>
+          </div>
+          <div class="pipeline-arrow">→</div>
+          <div class="pipeline-step">
+            <div class="step-name">2. Agent evaluation</div>
+            <div class="step-detail">If structural changes found, an agent reads the artifact and the diff. Decides what's stale and why.</div>
+          </div>
+          <div class="pipeline-arrow">→</div>
+          <div class="pipeline-step">
+            <div class="step-name">3. Update PR</div>
+            <div class="step-detail">Agent updates the representation, opens a PR. Human reviews and merges — or rejects.</div>
+          </div>
+        </div>
+
+        <p>The artifact stays honest automatically. The human stays in the approval loop via PRs, not manual auditing.</p>
+
+        <div class="callout">
+          An honest snapshot is worth more than a precise but stale one. The goal isn't real-time accuracy — it's <strong>trustworthiness as a shared mental model</strong>.
+        </div>
+      </section>
+
+      <hr>
+
+      <!-- SLIDE 6: Who It's For -->
+      <section id="who-its-for">
+        <div class="sec-head"><span class="dot" style="background:var(--indigo)"></span> Who It's For</div>
+        <h2>Grey matter, shared</h2>
+
+        <div class="grid-3" style="margin: 16px 0;">
+          <div class="ve-card c-teal">
+            <div class="ve-card__label">You and your agent</div>
+            <p>On any codebase. Brownfield — the agent reverse-engineers it from existing code, proposes it, you confirm or correct. Greenfield — it grows alongside the system. Returning after a month — 10 minutes to reload the grey matter.</p>
+          </div>
+          <div class="ve-card c-emerald">
+            <div class="ve-card__label">Your team</div>
+            <p>The tacit knowledge that lived in one person's head is now visible, shared, and versionable. New people don't do archaeology — they absorb the compressed understanding directly. How fast they swim depends on their experience, not their tenure.</p>
+          </div>
+          <div class="ve-card c-indigo">
+            <div class="ve-card__label">Anyone building with AI agents</div>
+            <p>Most AI coding tools give you a faster typist. This gives you a collaborator that shares your understanding of the system — and keeps it honest when the code changes.</p>
+          </div>
+        </div>
+      </section>
+
+      <hr>
+
+      <!-- SLIDE 7: The Philosophy -->
+      <section id="the-philosophy">
+        <div class="sec-head"><span class="dot" style="background:var(--accent)"></span> The Philosophy</div>
+        <h2>The agent sees the trees. You see the forest.</h2>
+
+        <p>The atlas is the map in between — the tacit knowledge made concrete, the grey matter made shared. Without it, you're steering from memory and the agent is building without context.</p>
+
+        <div class="callout" style="margin: 24px 0; font-size: 1.05rem;">
+          Not a faster typist. A <strong>collaborator that maintains a shared understanding of your system</strong> — and keeps it honest when the code changes.
+        </div>
+
+        <p>That's not a feature. It's a philosophy of collaboration.</p>
+
+        <hr style="margin: 40px 0;">
+        <div class="companion-grid">
+          <a class="companion-link" href="/">
+            <div class="companion-link__title">← All posts</div>
+            <div class="companion-link__desc">Back to the index.</div>
+          </a>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <script src="/mermaid-zoom.js" defer></script>
+  <script src="/scrollspy.js" defer></script>
+  <script src="/presentation.js" defer></script>
+</body>
+</html>
