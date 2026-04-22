@@ -73,12 +73,12 @@
           </div>
           <script type="text/plain" class="diagram-source">
 graph TD
-    human["👤 Human<br/><small>Tacit knowledge — intent, architecture,<br/>how the pieces fit together</small>"]
-    gap["🔒 Trapped<br/><small>Invisible, unshared, impossible to load<br/>into an agent's context</small>"]
-    agent["🤖 Agent<br/><small>Re-derives structure from code each session.<br/>Sees trees, never the forest.</small>"]
+    human["👤 Human<br/><small>Tacit knowledge — intent, architecture, how the pieces fit</small>"]
+    gap["🔒 Trapped<br/><small>Invisible, unshared, impossible to load into context</small>"]
+    agent["🤖 Agent<br/><small>Re-derives structure from code each session</small>"]
 
-    human -.->|"can't share"| gap
-    gap -.->|"can't load"| agent
+    human -.-x|"can't externalise"| gap
+    gap -.-x|"can't ingest"| agent
 
     classDef person fill:#d9770611,stroke:#d9770644,stroke-width:1.5px
     classDef middle fill:#f59e0b11,stroke:#f59e0b44,stroke-width:2px,stroke-dasharray: 5 5
