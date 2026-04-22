@@ -1,20 +1,50 @@
 /* ================================================================
-   Hermes Atlas — Scroll Spy
+   Hermes Atlas — Scroll Spy + Mobile Nav Toggle
    ----------------------------------------------------------------
    Highlights the active TOC link as the user scrolls. Works with
    any element that has id="toc" containing in-page anchor links.
-   On narrow viewports, scrolls the active link into the visible
-   horizontal strip.
+   On narrow viewports, adds a hamburger toggle and closes the nav
+   after link clicks.
    ================================================================ */
 (function () {
-  const toc = document.getElementById('toc');
+  const toc = document.querySelector('.toc');
   if (!toc) return;
 
+  // --- Mobile nav toggle ---
+  const toggle = document.createElement('button');
+  toggle.className = 'nav-toggle';
+  toggle.setAttribute('aria-label', 'Toggle navigation');
+  toggle.innerHTML = '<span class="bar"></span>';
+  document.body.appendChild(toggle);
+
+  const backdrop = document.createElement('div');
+  backdrop.className = 'nav-backdrop';
+  document.body.appendChild(backdrop);
+
+  function openNav() {
+    toc.classList.add('open');
+    toggle.classList.add('open');
+    backdrop.classList.add('open');
+  }
+  function closeNav() {
+    toc.classList.remove('open');
+    toggle.classList.remove('open');
+    backdrop.classList.remove('open');
+  }
+
+  toggle.addEventListener('click', function () {
+    toc.classList.contains('open') ? closeNav() : openNav();
+  });
+  backdrop.addEventListener('click', closeNav);
+
+  // --- Scrollspy ---
   const links = toc.querySelectorAll('a');
   const sections = [];
 
   links.forEach(link => {
-    const id = link.getAttribute('href').slice(1);
+    const href = link.getAttribute('href');
+    if (!href || !href.startsWith('#')) return;
+    const id = href.slice(1);
     const el = document.getElementById(id);
     if (el) sections.push({ id, el, link });
   });
@@ -26,11 +56,6 @@
         const match = sections.find(s => s.el === entry.target);
         if (match) {
           match.link.classList.add('active');
-          if (window.innerWidth <= 1000) {
-            match.link.scrollIntoView({
-              behavior: 'smooth', block: 'nearest', inline: 'center'
-            });
-          }
         }
       }
     });
@@ -40,10 +65,13 @@
 
   links.forEach(link => {
     link.addEventListener('click', e => {
+      const href = link.getAttribute('href');
+      if (!href || !href.startsWith('#')) return;
       e.preventDefault();
-      const id = link.getAttribute('href').slice(1);
+      const id = href.slice(1);
       const el = document.getElementById(id);
       if (el) {
+        closeNav();
         el.scrollIntoView({ behavior: 'smooth', block: 'start' });
         history.replaceState(null, '', '#' + id);
       }

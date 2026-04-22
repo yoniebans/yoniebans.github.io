@@ -253,23 +253,52 @@ function initDiagram(shell) {
     return 'Diagram';
   }
 
-  function openInNewTab() {
+  function openFullscreen() {
+    const svg = canvas.querySelector('svg');
+    if (!svg) return;
+
+    // Try native Fullscreen API first (works on most mobile browsers)
+    const el = shell;
+    if (el.requestFullscreen) {
+      el.requestFullscreen().catch(function () { openOverlay(); });
+    } else if (el.webkitRequestFullscreen) {
+      el.webkitRequestFullscreen();
+    } else {
+      openOverlay();
+    }
+  }
+
+  function openOverlay() {
     const svg = canvas.querySelector('svg');
     if (!svg) return;
     const clone = svg.cloneNode(true);
     clone.style.width = '';
     clone.style.height = '';
-    const title = getDiagramTitle();
-    const bg = isDark ? '#0c1222' : '#f1f5f9';
-    const html = `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>${title}</title><style>
-    body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;
-    background:${bg};padding:40px;box-sizing:border-box}
-    svg{max-width:100%;max-height:90vh;height:auto}
-    </style></head><body>${clone.outerHTML}</body></html>`;
-    open(URL.createObjectURL(new Blob([html], { type: 'text/html' })), '_blank');
+    clone.style.maxWidth = '95vw';
+    clone.style.maxHeight = '85vh';
+
+    const overlay = document.createElement('div');
+    overlay.className = 'diagram-overlay';
+    overlay.innerHTML = '<button class="diagram-overlay__close" aria-label="Close">&times;</button>';
+    overlay.insertBefore(clone, overlay.firstChild);
+
+    overlay.querySelector('.diagram-overlay__close').addEventListener('click', function () {
+      overlay.remove();
+    });
+    overlay.addEventListener('click', function (e) {
+      if (e.target === overlay) overlay.remove();
+    });
+
+    document.body.appendChild(overlay);
   }
+
+  // Exit fullscreen on Escape (native API handles this, but just in case)
+  document.addEventListener('fullscreenchange', function () {
+    if (!document.fullscreenElement) {
+      // Refit diagram when exiting fullscreen
+      if (svgW) { setAdaptiveHeight(); fitDiagram(); }
+    }
+  });
 
   async function render() {
     try {
@@ -317,8 +346,8 @@ function initDiagram(shell) {
     'fit':         fitDiagram,
     'zoom-one':    setOneToOne,
     'reset':       setOneToOne,
-    'zoom-expand': openInNewTab,
-    'expand':      openInNewTab,
+    'zoom-expand': openFullscreen,
+    'expand':      openFullscreen,
   };
 
   Object.entries(actions).forEach(([action, handler]) => {
