@@ -81,3 +81,9 @@ body.presentation-mode .main > [id] {
   from { opacity: 0; transform: translateY(12px); }
   to { opacity: 1; transform: translateY(0); }
 }
+
+@media (max-width: 1000px) {
+  body.presentation-mode .main {
+    padding-top: 20px;
+  }
+}
