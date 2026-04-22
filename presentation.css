@@ -86,4 +86,5 @@ body.presentation-mode .main > [id] {
   body.presentation-mode .main {
     padding-top: 20px;
   }
+  .pres-toggle { top: 12px; right: 52px; }
 }
