@@ -200,7 +200,7 @@ body {
   grid-template-columns: 170px 1fr;
   gap: 0 40px;
 }
-.main { min-width: 0; grid-column: 2; }
+.main { min-width: 0; grid-column: 2; padding-bottom: 40px; }
 .main p + p, .main p + ul, .main ul + p,
 .main p + .diagram-shell, .main .diagram-shell + p { margin-top: 16px; }
 
@@ -1138,7 +1138,7 @@ hr {
   /* Push theme toggle away from hamburger */
   .theme-toggle { top: 12px; right: 12px; }
 
-  .main { padding-top: 20px; grid-column: 1; }
+  .main { padding-top: 20px; padding-bottom: 20px; grid-column: 1; }
   .sec-head { scroll-margin-top: 16px; }
   section[id] { scroll-margin-top: 16px; }
   .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
