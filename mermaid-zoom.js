@@ -296,10 +296,13 @@ function initDiagram(shell) {
     document.body.appendChild(overlay);
   }
 
-  // Exit fullscreen on Escape (native API handles this, but just in case)
+  // Refit diagram on fullscreen enter and exit
   document.addEventListener('fullscreenchange', function () {
-    if (!document.fullscreenElement) {
-      // Refit diagram when exiting fullscreen
+    if (document.fullscreenElement === shell) {
+      // Entering fullscreen — refit after layout settles
+      requestAnimationFrame(function () { fitDiagram(); });
+    } else if (!document.fullscreenElement) {
+      // Exiting fullscreen
       if (svgW) { setAdaptiveHeight(); fitDiagram(); }
     }
   });
