@@ -1242,6 +1242,10 @@ hr {
   max-width: none;
   max-height: none;
 }
+.diagram-shell:fullscreen .diagram-shell__hint,
+.diagram-shell:-webkit-full-screen .diagram-shell__hint {
+  display: none;
+}
 
 .ref-link {
   color: inherit;
