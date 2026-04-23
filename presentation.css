@@ -72,6 +72,13 @@ body.presentation-mode .main > section.slide-active {
   display: block;
 }
 
+/* Kill page-load fadeUp animations — slides appear instantly */
+body.presentation-mode .anim {
+  animation: none !important;
+  opacity: 1 !important;
+  transform: none !important;
+}
+
 /* Smooth transitions for slides */
 body.presentation-mode section,
 body.presentation-mode .main > [id] {
