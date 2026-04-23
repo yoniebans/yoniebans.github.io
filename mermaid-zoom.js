@@ -175,15 +175,10 @@ function initDiagram(shell) {
 
   function fitDiagram() {
     if (!svgW) return;
-    // Default: 100% zoom, centered if smaller than viewport, top-left if larger
     zoom = 1.0;
     fitMode = '100%';
-    const vw = viewport.clientWidth;
-    const vh = viewport.clientHeight;
-    const dw = svgW * zoom;
-    const dh = svgH * zoom;
-    panX = dw < vw ? (vw - dw) / 2 : config.fitPadding;
-    panY = dh < vh ? (vh - dh) / 2 : config.fitPadding;
+    panX = (viewport.clientWidth - svgW * zoom) / 2;
+    panY = (viewport.clientHeight - svgH * zoom) / 2;
     applyTransform();
   }
 
