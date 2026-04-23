@@ -12,12 +12,12 @@
     body { min-height: 100vh; }
     .landing { max-width: 720px; margin: 0 auto; padding: 80px 24px; }
     .landing-title { font-size: 2rem; font-weight: 700; margin-bottom: 8px; }
-    .landing-subtitle { color: var(--fg-dim); font-size: 1rem; margin-bottom: 48px; }
+    .landing-subtitle { color: var(--text-dim); font-size: 1rem; margin-bottom: 48px; }
     .post-list { display: flex; flex-direction: column; gap: 16px; }
     .post-card {
       display: block;
       padding: 20px 24px;
-      background: var(--bg-card);
+      background: var(--surface);
       border: 1px solid var(--border);
       border-radius: 10px;
       text-decoration: none;
@@ -26,11 +26,11 @@
     }
     .post-card:hover {
       border-color: var(--accent);
-      background: var(--bg-hover);
+      background: var(--surface-elevated);
     }
     .post-card__title { font-size: 1.1rem; font-weight: 600; margin-bottom: 4px; }
-    .post-card__desc { font-size: 0.9rem; color: var(--fg-dim); line-height: 1.5; }
-    .post-card__date { font-size: 0.78rem; color: var(--fg-dim); opacity: 0.6; margin-top: 8px; }
+    .post-card__desc { font-size: 0.9rem; color: var(--text-dim); line-height: 1.5; }
+    .post-card__date { font-size: 0.78rem; color: var(--text-dim); opacity: 0.6; margin-top: 8px; }
   </style>
   <script src="/theme.js"></script>
 </head>
@@ -43,6 +43,12 @@
       <a class="post-card" href="/atlas/">
         <div class="post-card__title">The Atlas — making tacit knowledge shared</div>
         <div class="post-card__desc">Every experienced developer carries an understanding of their system that goes beyond docs and code. The atlas makes that tacit knowledge concrete — a shared artifact both human and AI agent read, write, and trust.</div>
+        <div class="post-card__date">April 2026</div>
+      </a>
+
+      <a class="post-card" href="https://yoniebans.github.io/hermes-architecture/">
+        <div class="post-card__title">Hermes Architecture</div>
+        <div class="post-card__desc">C4 system design, data model, interaction sequences, and documentation map for the Hermes agent platform. Four views into one system — from 30,000 feet to individual message flows.</div>
         <div class="post-card__date">April 2026</div>
       </a>
     </div>
