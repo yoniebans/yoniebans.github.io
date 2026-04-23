@@ -1237,8 +1237,8 @@ hr {
 }
 .diagram-shell:fullscreen .mermaid-wrap,
 .diagram-shell:-webkit-full-screen .mermaid-wrap {
-  width: 100%;
-  height: 100%;
+  width: 100% !important;
+  height: 100% !important;
   max-width: none;
   max-height: none;
 }
