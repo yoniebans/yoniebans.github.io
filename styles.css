@@ -242,6 +242,54 @@ body {
 .toc a:hover { color: var(--text); background: var(--surface2); }
 .toc a.active { color: var(--text); border-left-color: var(--accent); }
 
+/* ============ MULTI-PAGE TOC (page-nav.js) ============ */
+.toc-page { margin-bottom: 4px; }
+.toc-page__title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text);
+  text-decoration: none;
+  padding: 6px 8px;
+  border-radius: 6px;
+  border-left: 2px solid transparent;
+  transition: all 0.15s;
+  cursor: pointer;
+}
+.toc-page__title::before {
+  content: '\25B8';
+  font-size: 9px;
+  color: var(--text-dim);
+  transition: transform 0.2s ease;
+  flex-shrink: 0;
+}
+.toc-page__title:hover { background: var(--surface2); }
+.toc-page.is-active .toc-page__title {
+  color: var(--accent);
+  border-left-color: var(--accent);
+  background: var(--accent-dim);
+}
+.toc-page.is-active .toc-page__title::before {
+  transform: rotate(90deg);
+}
+.toc-page__sections {
+  overflow: hidden;
+  max-height: 1000px;
+  transition: max-height 0.3s ease, opacity 0.2s ease;
+  opacity: 1;
+  padding-left: 4px;
+}
+.toc-page.is-collapsed .toc-page__sections {
+  max-height: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+.toc-page.is-collapsed .toc-page__title::before {
+  transform: rotate(0deg);
+}
+
 /* ============ TYPOGRAPHY ============ */
 h1 {
   font-size: 42px;
@@ -1125,6 +1173,15 @@ hr {
   .toc .toc-home {
     margin-top: 8px; padding-top: 12px;
     border-top: 1px solid var(--border);
+  }
+
+  /* Multi-page TOC mobile */
+  .toc-page__title {
+    padding: 10px 12px;
+    font-size: 14px;
+  }
+  .toc-page.is-active .toc-page__title {
+    border-left-width: 2px;
   }
 
   /* Backdrop overlay */
