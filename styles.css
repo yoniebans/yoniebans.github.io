@@ -1235,6 +1235,13 @@ hr {
   display: flex; align-items: center; justify-content: center;
   padding: 20px;
 }
+.diagram-shell:fullscreen .mermaid-wrap,
+.diagram-shell:-webkit-full-screen .mermaid-wrap {
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  max-height: none;
+}
 
 .ref-link {
   color: inherit;
