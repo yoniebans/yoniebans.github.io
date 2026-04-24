@@ -66,8 +66,10 @@ Decide which pages the system warrants autonomously. Document the reasoning in `
 
 ## Output directory structure
 
+The output directory is specified by the user at invocation. All IR artifacts go here:
+
 ```
-<project>/atlas/
+<output-dir>/
 ├── atlas.yaml                    # root manifest — identity + page list
 ├── pages/
 │   ├── c4-architecture.yaml      # always
@@ -84,6 +86,8 @@ Decide which pages the system warrants autonomously. Document the reasoning in `
 │   └── ...
 └── refs.json                     # concept → source repo path mappings
 ```
+
+The HTML output from Skill 2 (`atlas-ir-visual-translation`) goes into the same output directory alongside the IR.
 
 ---
 
