@@ -38,15 +38,11 @@ The reference IRs live in `atlas-ir-system-modelling/references/`. Load with `sk
 skill_view(name="atlas-ir-system-modelling", file_path="references/c4-architecture.yaml")
 ```
 
-### Design system assets (MANDATORY — read before writing any HTML)
+### Design system
 
-The canonical design system files are bundled in this skill's `design-system/` directory, copied from the yoniebans.github.io root. These are the rendering vocabulary — CSS components, Mermaid zoom/pan, scrollspy, presentation mode, etc.
+The canonical design system lives at the root of [yoniebans/yoniebans.github.io](https://github.com/yoniebans/yoniebans.github.io): `styles.css`, `presentation.css`, `mermaid-zoom.js`, `scrollspy.js`, `page-nav.js`, `enhancer.js`, `presentation.js`, `theme.js`.
 
-Files: `styles.css`, `presentation.css`, `mermaid-zoom.js`, `scrollspy.js`, `page-nav.js`, `enhancer.js`, `presentation.js`, `theme.js`.
-
-**Keeping them current:** When the canonical design system at yoniebans.github.io updates, copy fresh files into this skill's `design-system/` directory. The skill-local copies are what gets deployed to project atlases — if they're stale, every atlas rendered from them is stale.
-
-**MANDATORY pre-flight read:** Before writing any HTML, read `styles.css` from the design-system directory to load the available CSS classes. Do NOT invent class names — only use classes that exist in the stylesheet. If a class name isn't in `styles.css`, it won't render.
+**MANDATORY pre-flight read:** Before writing any HTML, read `styles.css` from the canonical source to load the available CSS classes. Do NOT invent class names — only use classes that exist in the stylesheet. If a class name isn't in `styles.css`, it won't render.
 
 ---
 
@@ -79,8 +75,6 @@ Before writing any HTML, the agent needs the design system classes in context an
 cat /mnt/hermes/source/yoniebans.github.io/styles.css
 ```
 
-If the local clone isn't available, the skill's `design-system/styles.css` is a fallback — but it may be stale. Flag this.
-
 This is the single most important pre-flight read — without it, the agent will invent class names from training data.
 
 ### 0b. Set up base/ submodule in output directory
@@ -112,7 +106,6 @@ Read at least `index.html` from the [hermes-architecture exemplar](https://githu
 |---|---|---|
 | **Design system** (CSS, JS) | [yoniebans.github.io](https://github.com/yoniebans/yoniebans.github.io) root | Source of truth for styles, components, and interactive behaviour. Consumed via `base/` git submodule. |
 | **Exemplar** (HTML pages) | [yoniebans/hermes-architecture](https://github.com/yoniebans/hermes-architecture) | Shows how to use the design system correctly — structure, class usage, diagram shells. Inherits design system via `base/` git submodule. |
-| **Skill snapshot** (`design-system/`) | This skill's directory | Fallback copy for reading CSS classes when canonical source isn't available locally. NOT deployed to output. |
 
 ---
 
