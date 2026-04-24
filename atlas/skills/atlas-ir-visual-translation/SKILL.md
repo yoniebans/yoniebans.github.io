@@ -38,17 +38,15 @@ The reference IRs live in `atlas-ir-system-modelling/references/`. Load with `sk
 skill_view(name="atlas-ir-system-modelling", file_path="references/c4-architecture.yaml")
 ```
 
-### Design system reference
+### Design system assets
 
-The canonical design system lives at `yoniebans.github.io` (repo: `yoniebans/yoniebans.github.io`). Root files: `styles.css`, `mermaid-zoom.js`, `scrollspy.js`, `page-nav.js`, `enhancer.js`, `presentation.js`, `presentation.css`, `theme.js`.
+The canonical design system files are bundled in this skill's `design-system/` directory, copied from the yoniebans.github.io root. These are the rendering vocabulary — CSS components, Mermaid zoom/pan, scrollspy, presentation mode, etc.
+
+Files: `styles.css`, `presentation.css`, `mermaid-zoom.js`, `scrollspy.js`, `page-nav.js`, `enhancer.js`, `presentation.js`, `theme.js`.
+
+**Keeping them current:** When the canonical design system at yoniebans.github.io updates, copy fresh files into this skill's `design-system/` directory. The skill-local copies are what gets deployed to project atlases — if they're stale, every atlas rendered from them is stale.
 
 The hand-authored reference site at `/mnt/hermes/source/hermes-architecture/` is the exemplar — mine it for patterns, component vocabulary, and visual conventions. Read at least `index.html` (C4 page) and `styles.css` to load the component vocabulary.
-
-**Consumer repos inherit via git submodule:**
-```bash
-git submodule add https://github.com/yoniebans/yoniebans.github.io.git base
-```
-Pages reference assets as `base/styles.css`, `base/mermaid-zoom.js`, etc.
 
 ---
 
@@ -57,19 +55,36 @@ Pages reference assets as `base/styles.css`, `base/mermaid-zoom.js`, etc.
 One HTML file per IR page, plus design system assets:
 
 ```
-<project>/atlas/
-├── atlas.yaml                    # already exists from Skill 1
-├── pages/                        # IR YAML — already exists
-├── diagrams/                     # .mmd files — already exists
-├── refs.json                     # already exists
-├── html/                         # NEW — rendered output
-│   ├── index.html                # C4 Architecture (always)
-│   ├── data-model.html           # when IR page exists
-│   ├── sequence-diagrams.html    # when IR page exists
-│   ├── diataxis.html             # when IR page exists
-│   └── refs.js                   # refs.json reformatted for enhancer.js
-└── base/                         # git submodule → yoniebans.github.io
+<output-dir>/
+├── index.html                # C4 Architecture (always)
+├── data-model.html           # when IR page exists
+├── sequence-diagrams.html    # when IR page exists
+├── diataxis.html             # when IR page exists
+├── refs.js                   # refs.json reformatted for enhancer.js
+└── base/                     # design system assets (copied from skill)
+    ├── styles.css
+    ├── presentation.css
+    ├── mermaid-zoom.js
+    ├── scrollspy.js
+    ├── page-nav.js
+    ├── enhancer.js
+    ├── presentation.js
+    └── theme.js
 ```
+
+---
+
+## Step 0 — Deploy design system to output directory
+
+Before writing any HTML, copy the design system files into the output directory:
+
+1. Create `<output-dir>/base/`
+2. Copy all files from this skill's `design-system/` directory into `base/`
+3. Verify: all 8 files present (2 CSS + 6 JS)
+
+If the output directory already has a `base/` from a previous run, overwrite — always use the latest design system from the skill.
+
+All HTML pages reference assets as `base/styles.css`, `base/mermaid-zoom.js`, etc.
 
 ---
 

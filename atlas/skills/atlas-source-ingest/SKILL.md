@@ -24,6 +24,33 @@ Load structural understanding of a project into agent context. This skill is the
 
 ---
 
+## Invocation
+
+The user triggers the pipeline by loading the three atlas skills and providing a prompt. The agent needs three things to proceed:
+
+1. **Source repo** — path to the codebase under investigation
+2. **Output directory** — where the IR YAML and rendered HTML will be written
+3. **Mode** — cold start, IR delta, or PR review (can often be inferred)
+
+Example invocation:
+```
+hermes -s atlas-source-ingest,atlas-ir-system-modelling,atlas-ir-visual-translation
+```
+Then: "Build an atlas for /mnt/hermes/source/hermes-agent-data-pipeline, output to /mnt/hermes/workspace/hermes-agent-data-pipeline-atlas/"
+
+**Before proceeding, confirm with the user:**
+
+Present what the agent has inferred and get approval:
+
+1. **Source repo:** path, name, what it appears to be
+2. **Detected mode:** cold start / IR delta / PR review, and why
+3. **Output directory:** where IR and HTML will be written
+4. **Any ambiguities** — flag them, propose a default, ask
+
+Only proceed after the user confirms. This is the one user checkpoint in the pipeline — everything after runs autonomously.
+
+---
+
 ## Mode detection
 
 Determine which mode to use before starting analysis:
@@ -187,7 +214,7 @@ If IR-visible changes exist, proceed to IR updates via `atlas-ir-system-modellin
 - **Don't serialise parallel reads.** The cold start pass touches dozens of files — batch them. This is the single biggest efficiency win.
 - **Don't read every file.** The goal is structural understanding, not line-by-line familiarity. Read entry points, schemas, configs, and READMEs. Skim directory structure. Skip test files, generated code, vendored dependencies.
 - **Don't produce an artifact.** This skill loads context for downstream skills running in the same window. If you find yourself writing a "discovery report" to disk, stop — that's the old approach.
-- **Don't stop to ask for confirmation.** The pipeline runs autonomously: ingest → model IR → render HTML. The user reviews the final output. Structural judgments go in `modelling_notes`, not in a message asking "agree?"
+- **Don't stop to ask mid-pipeline.** The only user checkpoint is the invocation confirmation at the start. After that, the pipeline runs autonomously: ingest → model IR → render HTML. Structural judgments go in `modelling_notes`, not in messages asking "agree?"
 - **Don't re-derive what the IR already knows (delta/PR modes).** Read the IR first. It's the baseline. Only analyse what changed.
 - **Don't treat every code change as architecturally significant (PR mode).** Most changes are IR-invisible. The skill's value in PR mode is triage — quickly identifying whether the architecture is affected.
 - **Don't guess the mode.** If it's unclear whether IR exists or what state it's in, check the filesystem. If it's ambiguous whether this is a general update or PR review, ask.
