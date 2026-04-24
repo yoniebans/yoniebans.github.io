@@ -52,7 +52,7 @@ Files: `styles.css`, `presentation.css`, `mermaid-zoom.js`, `scrollspy.js`, `pag
 
 ## Output structure
 
-One HTML file per IR page, plus design system assets:
+One HTML file per IR page, plus design system via submodule:
 
 ```
 <output-dir>/
@@ -61,58 +61,58 @@ One HTML file per IR page, plus design system assets:
 ├── sequence-diagrams.html    # when IR page exists
 ├── diataxis.html             # when IR page exists
 ├── refs.js                   # refs.json reformatted for enhancer.js
-└── base/                     # design system assets (copied from skill)
-    ├── styles.css
-    ├── presentation.css
-    ├── mermaid-zoom.js
-    ├── scrollspy.js
-    ├── page-nav.js
-    ├── enhancer.js
-    ├── presentation.js
-    └── theme.js
+└── base/                     # git submodule → yoniebans.github.io
 ```
 
 ---
 
-## Step 0 — Verify and deploy design system
+## Step 0 — Verify design system context and set up output
 
-Before writing any HTML, ensure the design system is current and deployed to the output directory.
+Before writing any HTML, the agent needs the design system classes in context and the output directory needs the submodule.
 
-### 0a. Update skill-local design system from canonical source
+### 0a. Read canonical styles.css into context
 
-The canonical design system lives at the root of [yoniebans/yoniebans.github.io](https://github.com/yoniebans/yoniebans.github.io). The skill's `design-system/` directory is a snapshot — it can go stale.
-
-Before each run, sync from the canonical source:
+**MANDATORY.** The agent must read the latest `styles.css` from the canonical source to know what CSS classes exist. Every class name used in the HTML must exist in this file.
 
 ```bash
-# If the repo is cloned locally
-cp /mnt/hermes/source/yoniebans.github.io/{styles.css,presentation.css,mermaid-zoom.js,scrollspy.js,page-nav.js,enhancer.js,presentation.js,theme.js} <skill-dir>/design-system/
+# Read from local clone of yoniebans.github.io
+cat /mnt/hermes/source/yoniebans.github.io/styles.css
 ```
 
-If the local clone isn't available, the bundled snapshot is the fallback — but flag it as potentially stale.
+If the local clone isn't available, the skill's `design-system/styles.css` is a fallback — but it may be stale. Flag this.
 
-### 0b. Copy design system to output directory
+This is the single most important pre-flight read — without it, the agent will invent class names from training data.
 
-1. Create `<output-dir>/base/`
-2. Copy all files from this skill's `design-system/` directory into `base/`
-3. Verify: all 8 files present (2 CSS + 6 JS)
+### 0b. Set up base/ submodule in output directory
 
-If the output directory already has a `base/` from a previous run, overwrite — always use the latest.
+The output directory inherits the design system via git submodule, exactly like the [hermes-architecture exemplar](https://github.com/yoniebans/hermes-architecture) does:
 
-### 0c. Read styles.css into context
+```bash
+cd <output-dir>
+git init  # if not already a repo
+git submodule add https://github.com/yoniebans/yoniebans.github.io.git base
+```
 
-**MANDATORY.** Read `<output-dir>/base/styles.css` to load the available CSS classes into context. Every class name used in the HTML must exist in this file. This is the single most important pre-flight read — without it, the agent will invent class names from training data.
+All HTML pages reference assets as `base/styles.css`, `base/mermaid-zoom.js`, etc. No files are copied — the submodule is the live link.
 
-All HTML pages reference assets as `base/styles.css`, `base/mermaid-zoom.js`, etc.
+If the output directory already has a `base/` submodule, update it:
+
+```bash
+cd <output-dir>
+git submodule update --remote base
+```
+
+### 0c. Read exemplar for structural patterns
+
+Read at least `index.html` from the [hermes-architecture exemplar](https://github.com/yoniebans/hermes-architecture) to see the canonical page structure in practice. This shows how the design system classes are actually used — wrap/main layout, diagram-shell markup, TOC structure.
 
 ### Design system vs exemplar
 
 | What | Where | Purpose |
 |---|---|---|
-| **Design system** (CSS, JS) | `yoniebans.github.io` root | Source of truth for styles, components, and interactive behaviour |
+| **Design system** (CSS, JS) | [yoniebans.github.io](https://github.com/yoniebans/yoniebans.github.io) root | Source of truth for styles, components, and interactive behaviour. Consumed via `base/` git submodule. |
 | **Exemplar** (HTML pages) | [yoniebans/hermes-architecture](https://github.com/yoniebans/hermes-architecture) | Shows how to use the design system correctly — structure, class usage, diagram shells. Inherits design system via `base/` git submodule. |
-
-The exemplar's HTML pages are the in-context learning reference. Read at least `index.html` to see the canonical page structure in practice. The exemplar does NOT contain its own CSS/JS — it references `base/` which is the submodule.
+| **Skill snapshot** (`design-system/`) | This skill's directory | Fallback copy for reading CSS classes when canonical source isn't available locally. NOT deployed to output. |
 
 ---
 
