@@ -1,7 +1,7 @@
 ---
 name: atlas-ir-system-modelling
 description: "IR YAML producer — second phase of the atlas IR pipeline. Takes the agent's loaded understanding (from atlas-source-ingest) and expresses it as structured, domain-specific IR YAML pages + Mermaid .mmd diagram files. Makes structural judgments (page types, decomposition depth, flow selection). Does NOT make rendering decisions. Runs in the same context window as atlas-source-ingest."
-maturity: "new — v0.1, April 2026. No roundtrip test yet."
+maturity: "v0.2, April 2026. First roundtrip test completed — IR output passed audit, sequence diagram <br/> issue fixed."
 metadata:
   hermes:
     tags: [atlas, ir, architecture, modelling, c4, documentation]
@@ -279,9 +279,10 @@ Use `stroke-dasharray: 5 5` for planned/future components.
 ### Diagram hygiene
 
 - **Naming:** Kebab-case, descriptive. `context.mmd`, `containers.mmd`, `core-engine.mmd`, `entity-map.mmd`, `cli-message-flow.mmd`.
-- **Edge labels:** Append `&ensp;` to prevent clipping (Mermaid v11 bug).
+- **Edge labels (`graph TD` only):** Append `&ensp;` to prevent clipping (Mermaid v11 bug). Do NOT use `&ensp;` in `sequenceDiagram` — `<script type="text/plain">` blocks don't parse HTML entities, so `&ensp;` is sent literally to Mermaid and causes parse errors. The clipping hack is only for `graph TD` edge labels.
 - **Disconnected subgraphs in LR mode:** Add invisible link `subA ~~~ subB` to force side-by-side.
-- **Node labels:** Use `["Label<br/><small>Description</small>"]` for C4 nodes.
+- **Node labels:** Use `["Label<br/><small>Description</small>"]` for `graph TD` nodes only.
+- **No `<br/>` in sequenceDiagram.** `<br/>` is valid in `graph TD` node labels (HTML-like formatting) but causes parse errors in `sequenceDiagram` arrow labels and notes. Mermaid sequence diagrams use `\n` for line breaks inside labels, not HTML. First test failure: all 5 sequence diagrams had `<br/>` in arrow labels and failed to render.
 - **Keep diagrams readable.** If a diagram exceeds ~15 nodes, split it and document the split rationale in the IR.
 
 ---
@@ -345,6 +346,7 @@ If the IR is so loose that projects are structurally incoherent → IR has under
 - **Don't confuse containers with components.** A container is a runtime boundary (separately deployable). A component is a grouping within a container (same process). When in doubt: "does this need to be running?"
 - **Don't over-decompose.** L3 is selective. L4 is almost never. The atlas is for orientation, not code-level detail. IDEs do L4 better.
 - **Don't forget cross-page name consistency.** If the C4 page calls it "Core Engine", every other page must use the same name. Build a glossary mentally and stick to it.
+- **Don't use `<br/>` or `&ensp;` in sequence diagrams.** `<br/>` and `&ensp;` are valid in `graph TD` node/edge labels but cause parse errors in `sequenceDiagram`. Sequence diagram labels are plain text — no HTML. This broke all 5 sequence diagrams in the first test.
 
 ---
 

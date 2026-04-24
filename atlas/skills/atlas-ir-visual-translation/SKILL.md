@@ -445,7 +445,7 @@ The agent reads the IR's depth and significance signals and adapts visual weight
 - **Don't forget `mermaid.initialize({ startOnLoad: false })`.** Without it, Mermaid auto-renders on DOMContentLoaded, racing with `mermaid-zoom.js`. Symptom: diagrams flash, render twice.
 - **Don't forget `defer` on ALL body scripts.** Inconsistent `defer` causes race conditions between page-nav, scrollspy, and mermaid-zoom.
 - **Don't use `graph LR` with unlinked subgraphs.** Mermaid stacks them vertically. Add invisible link `subA ~~~ subB` for side-by-side.
-- **Edge label clipping.** Mermaid v11 clips the last 1-2 chars of edge labels. Append `&ensp;` to the label text.
+- **Edge label clipping.** Mermaid v11 clips the last 1-2 chars of `graph TD` edge labels. Append `&ensp;` to the label text. Do NOT use `&ensp;` in `sequenceDiagram` — it's passed literally and breaks parsing.
 - **Don't put content outside `<section>` elements.** Presentation mode won't see it and it'll persist visually during slides, breaking the experience.
 - **Don't duplicate diagram source.** The `.mmd` files are the source of truth. Embed their content into `<script type="text/plain" class="diagram-source">` — don't rewrite or hand-modify the Mermaid in HTML.
 - **Don't hardcode GitHub links.** Use `data-ref` attributes and let `enhancer.js` + `refs.js` handle link generation.
