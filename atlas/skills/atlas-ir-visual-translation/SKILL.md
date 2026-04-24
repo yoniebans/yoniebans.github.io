@@ -48,8 +48,6 @@ Files: `styles.css`, `presentation.css`, `mermaid-zoom.js`, `scrollspy.js`, `pag
 
 **MANDATORY pre-flight read:** Before writing any HTML, read `styles.css` from the design-system directory to load the available CSS classes. Do NOT invent class names — only use classes that exist in the stylesheet. If a class name isn't in `styles.css`, it won't render.
 
-The hand-authored reference site at [yoniebans/hermes-architecture](https://github.com/yoniebans/hermes-architecture) is the exemplar — mine it for patterns, component vocabulary, and visual conventions. Read `index.html` (C4 page) to see the canonical HTML structure in practice.
-
 ---
 
 ## Output structure
@@ -76,17 +74,45 @@ One HTML file per IR page, plus design system assets:
 
 ---
 
-## Step 0 — Deploy design system to output directory
+## Step 0 — Verify and deploy design system
 
-Before writing any HTML, copy the design system files into the output directory:
+Before writing any HTML, ensure the design system is current and deployed to the output directory.
+
+### 0a. Update skill-local design system from canonical source
+
+The canonical design system lives at the root of [yoniebans/yoniebans.github.io](https://github.com/yoniebans/yoniebans.github.io). The skill's `design-system/` directory is a snapshot — it can go stale.
+
+Before each run, sync from the canonical source:
+
+```bash
+# If the repo is cloned locally
+cp /mnt/hermes/source/yoniebans.github.io/{styles.css,presentation.css,mermaid-zoom.js,scrollspy.js,page-nav.js,enhancer.js,presentation.js,theme.js} <skill-dir>/design-system/
+```
+
+If the local clone isn't available, the bundled snapshot is the fallback — but flag it as potentially stale.
+
+### 0b. Copy design system to output directory
 
 1. Create `<output-dir>/base/`
 2. Copy all files from this skill's `design-system/` directory into `base/`
 3. Verify: all 8 files present (2 CSS + 6 JS)
 
-If the output directory already has a `base/` from a previous run, overwrite — always use the latest design system from the skill.
+If the output directory already has a `base/` from a previous run, overwrite — always use the latest.
+
+### 0c. Read styles.css into context
+
+**MANDATORY.** Read `<output-dir>/base/styles.css` to load the available CSS classes into context. Every class name used in the HTML must exist in this file. This is the single most important pre-flight read — without it, the agent will invent class names from training data.
 
 All HTML pages reference assets as `base/styles.css`, `base/mermaid-zoom.js`, etc.
+
+### Design system vs exemplar
+
+| What | Where | Purpose |
+|---|---|---|
+| **Design system** (CSS, JS) | `yoniebans.github.io` root | Source of truth for styles, components, and interactive behaviour |
+| **Exemplar** (HTML pages) | [yoniebans/hermes-architecture](https://github.com/yoniebans/hermes-architecture) | Shows how to use the design system correctly — structure, class usage, diagram shells. Inherits design system via `base/` git submodule. |
+
+The exemplar's HTML pages are the in-context learning reference. Read at least `index.html` to see the canonical page structure in practice. The exemplar does NOT contain its own CSS/JS — it references `base/` which is the submodule.
 
 ---
 
