@@ -48,7 +48,7 @@ Files: `styles.css`, `presentation.css`, `mermaid-zoom.js`, `scrollspy.js`, `pag
 
 **MANDATORY pre-flight read:** Before writing any HTML, read `styles.css` from the design-system directory to load the available CSS classes. Do NOT invent class names — only use classes that exist in the stylesheet. If a class name isn't in `styles.css`, it won't render.
 
-The hand-authored reference site at `/mnt/hermes/source/hermes-architecture/` is the exemplar — mine it for patterns, component vocabulary, and visual conventions. Read `index.html` (C4 page) to see the canonical HTML structure in practice.
+The hand-authored reference site at [yoniebans/hermes-architecture](https://github.com/yoniebans/hermes-architecture) is the exemplar — mine it for patterns, component vocabulary, and visual conventions. Read `index.html` (C4 page) to see the canonical HTML structure in practice.
 
 ---
 
