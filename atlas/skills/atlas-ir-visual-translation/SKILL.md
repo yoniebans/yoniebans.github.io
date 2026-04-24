@@ -298,18 +298,48 @@ The TOC sections come from the `<section id="...">` elements in each page. Build
 
 ---
 
-## Delegation rules
+## Delegation strategy
 
-If using subagent delegation to render multiple pages in parallel:
+### Preferred: single context window (no delegation)
 
-1. **Every subagent MUST read this skill in full** before writing any HTML
-2. **Every subagent MUST read `styles.css`** from the design-system directory to know what CSS classes exist
-3. **Every subagent MUST receive the exact page skeleton** (from "HTML page structure" above) as part of its context — not a summary, the actual HTML template
-4. **Every subagent MUST receive the exact diagram-shell markup** — copy-paste, not described
-5. **All pages MUST use Mermaid @11** — never @10 or any other version
-6. **All pages MUST have `<div class="wrap">` and `<main class="main">`** — verify after generation
+Render all pages sequentially in the same context window that ran ingest and modelling. The agent already has the IR, the codebase understanding, and the skill loaded. This guarantees structural consistency across pages — no risk of one page using different markup patterns than another.
 
-Prefer rendering all pages in one context window when possible. Delegation is only worthwhile for 4+ pages, and even then the structural consistency risk is real. If delegating, verify every page has identical structural scaffolding before declaring done.
+This is the default for ≤4 pages. Most atlas runs produce 2-4 pages.
+
+### If delegating: what the parent must provide
+
+Leaf subagents **cannot** load skills, read memory, or ask the user. They only know what the parent puts in their `context` field. The parent agent is responsible for assembling a complete, self-contained brief for each subagent.
+
+**Before delegating, the parent must:**
+
+1. **Read `styles.css`** from the canonical source and extract the CSS class inventory
+2. **Build the complete TOC** by deriving section IDs from the IR YAML for ALL pages (section IDs are kebab-case of IR content names — e.g. "Core Engine" → `core-engine`)
+3. **Read the exemplar** (`index.html` from hermes-architecture) to have the canonical HTML patterns in context
+
+**Each subagent's `context` must include (copy-paste, not summarised):**
+
+1. **The exact page skeleton** — the complete HTML template from the "HTML page structure" section above, including `<html data-theme="dark">`, `<div class="wrap">`, `<main class="main">`, all script tags in order
+2. **The exact diagram-shell markup** — the complete `<section class="diagram-shell">` block with all zoom buttons using `data-action` attributes
+3. **The complete TOC HTML** — identical for every page, with all pages and their section IDs (built by parent from IR)
+4. **The CSS class whitelist** — the "Allowed CSS classes" list from this skill. Emphasise: if a class isn't in this list, don't use it
+5. **The banned class names** — `card-row`, `card-tech`, `diagram-chrome`, `pipeline-group`, etc.
+6. **The component mapping table** — which IR concept maps to which HTML component
+7. **The IR YAML for this specific page** — the full content of the page's YAML file
+8. **The .mmd diagram sources** — full content of every diagram referenced by this page's IR
+9. **The refs data** — from refs.json, for `data-ref` attributes
+10. **Key rules:** Mermaid @11 (not @10), `mermaid.initialize({ startOnLoad: false })`, all scripts `defer`, `px` not `rem`, paragraphs ≤3 lines
+
+**After all subagents complete, the parent must verify:**
+
+- Grep every HTML file for `<div class="wrap">` and `<main class="main">` — both present
+- Grep for `mermaid@` — all `@11`, zero `@10`
+- Grep for `data-action="zoom-in"` — present in every diagram
+- Grep for `class="zoom-in"` — zero hits
+- Grep for invented classes (`card-row`, `card-tech`, `diagram-chrome`) — zero hits
+- TOC markup is identical across all pages
+- Mermaid version is identical across all pages
+
+**The overhead of assembling this context is significant.** For 4 pages, it's faster and safer to render sequentially. Only delegate for large atlases (6+ pages) where the time savings justify the consistency risk.
 
 ---
 
