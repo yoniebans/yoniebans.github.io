@@ -1,7 +1,7 @@
 ---
 name: atlas-ir-visual-translation
 description: "IR YAML → HTML. Final phase of the atlas IR pipeline. Reads structured IR YAML (from atlas-ir-system-modelling) and renders it as interactive atlas HTML pages using the design system. Visual judgment lives here — component selection, layout, diagrams vs prose, cards vs bullets. Runs in the same context window as the preceding skills."
-maturity: "new — v0.1, April 2026. Untested."
+maturity: "v0.2, April 2026. First test revealed structural failures — fixes applied."
 metadata:
   hermes:
     tags: [atlas, ir, html, rendering, design-system, mermaid]
@@ -38,21 +38,17 @@ The reference IRs live in `atlas-ir-system-modelling/references/`. Load with `sk
 skill_view(name="atlas-ir-system-modelling", file_path="references/c4-architecture.yaml")
 ```
 
-### Design system assets
+### Design system
 
-The canonical design system files are bundled in this skill's `design-system/` directory, copied from the yoniebans.github.io root. These are the rendering vocabulary — CSS components, Mermaid zoom/pan, scrollspy, presentation mode, etc.
+The canonical design system lives at the root of [yoniebans/yoniebans.github.io](https://github.com/yoniebans/yoniebans.github.io): `styles.css`, `presentation.css`, `mermaid-zoom.js`, `scrollspy.js`, `page-nav.js`, `enhancer.js`, `presentation.js`, `theme.js`.
 
-Files: `styles.css`, `presentation.css`, `mermaid-zoom.js`, `scrollspy.js`, `page-nav.js`, `enhancer.js`, `presentation.js`, `theme.js`.
-
-**Keeping them current:** When the canonical design system at yoniebans.github.io updates, copy fresh files into this skill's `design-system/` directory. The skill-local copies are what gets deployed to project atlases — if they're stale, every atlas rendered from them is stale.
-
-The hand-authored reference site at `/mnt/hermes/source/hermes-architecture/` is the exemplar — mine it for patterns, component vocabulary, and visual conventions. Read at least `index.html` (C4 page) and `styles.css` to load the component vocabulary.
+**MANDATORY pre-flight read:** Before writing any HTML, read `styles.css` from the canonical source to load the available CSS classes. Do NOT invent class names — only use classes that exist in the stylesheet. If a class name isn't in `styles.css`, it won't render.
 
 ---
 
 ## Output structure
 
-One HTML file per IR page, plus design system assets:
+One HTML file per IR page, plus design system via submodule:
 
 ```
 <output-dir>/
@@ -61,40 +57,67 @@ One HTML file per IR page, plus design system assets:
 ├── sequence-diagrams.html    # when IR page exists
 ├── diataxis.html             # when IR page exists
 ├── refs.js                   # refs.json reformatted for enhancer.js
-└── base/                     # design system assets (copied from skill)
-    ├── styles.css
-    ├── presentation.css
-    ├── mermaid-zoom.js
-    ├── scrollspy.js
-    ├── page-nav.js
-    ├── enhancer.js
-    ├── presentation.js
-    └── theme.js
+└── base/                     # git submodule → yoniebans.github.io
 ```
 
 ---
 
-## Step 0 — Deploy design system to output directory
+## Step 0 — Verify design system context and set up output
 
-Before writing any HTML, copy the design system files into the output directory:
+Before writing any HTML, the agent needs the design system classes in context and the output directory needs the submodule.
 
-1. Create `<output-dir>/base/`
-2. Copy all files from this skill's `design-system/` directory into `base/`
-3. Verify: all 8 files present (2 CSS + 6 JS)
+### 0a. Read canonical styles.css into context
 
-If the output directory already has a `base/` from a previous run, overwrite — always use the latest design system from the skill.
+**MANDATORY.** The agent must read the latest `styles.css` from the canonical source to know what CSS classes exist. Every class name used in the HTML must exist in this file.
 
-All HTML pages reference assets as `base/styles.css`, `base/mermaid-zoom.js`, etc.
+```bash
+# Read from local clone of yoniebans.github.io
+cat /mnt/hermes/source/yoniebans.github.io/styles.css
+```
+
+This is the single most important pre-flight read — without it, the agent will invent class names from training data.
+
+### 0b. Set up base/ submodule in output directory
+
+The output directory inherits the design system via git submodule, exactly like the [hermes-architecture exemplar](https://github.com/yoniebans/hermes-architecture) does:
+
+```bash
+cd <output-dir>
+git init  # if not already a repo
+git submodule add https://github.com/yoniebans/yoniebans.github.io.git base
+```
+
+All HTML pages reference assets as `base/styles.css`, `base/mermaid-zoom.js`, etc. No files are copied — the submodule is the live link.
+
+If the output directory already has a `base/` submodule, update it:
+
+```bash
+cd <output-dir>
+git submodule update --remote base
+```
+
+### 0c. Read exemplar for structural patterns
+
+Read at least `index.html` from the [hermes-architecture exemplar](https://github.com/yoniebans/hermes-architecture) to see the canonical page structure in practice. This shows how the design system classes are actually used — wrap/main layout, diagram-shell markup, TOC structure.
+
+### Design system vs exemplar
+
+| What | Where | Purpose |
+|---|---|---|
+| **Design system** (CSS, JS) | [yoniebans.github.io](https://github.com/yoniebans/yoniebans.github.io) root | Source of truth for styles, components, and interactive behaviour. Consumed via `base/` git submodule. |
+| **Exemplar** (HTML pages) | [yoniebans/hermes-architecture](https://github.com/yoniebans/hermes-architecture) | Shows how to use the design system correctly — structure, class usage, diagram shells. Inherits design system via `base/` git submodule. |
 
 ---
 
 ## HTML page structure
 
-Every page follows the same skeleton:
+Every page MUST follow this exact skeleton. Do NOT deviate from this structure — the layout, TOC, and all JS functionality depend on it.
+
+**⚠️ CRITICAL:** The `<div class="wrap">` and `<main class="main">` wrappers are mandatory. Without them, the sidebar layout collapses and the page renders as an unstyled vertical stack.
 
 ```html
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -124,13 +147,22 @@ Every page follows the same skeleton:
 </html>
 ```
 
-### Critical `<head>` order
+### Non-negotiable structural rules
+
+1. **`<html lang="en" data-theme="dark">`** — theme.js reads `data-theme`
+2. **`<div class="wrap">`** wraps everything inside `<body>` (before scripts)
+3. **`<nav class="toc" id="toc">`** — sidebar TOC, inside `.wrap`
+4. **`<main class="main">`** — all page content, inside `.wrap`, after nav
+5. **Mermaid @11** — not @10, not @9. Version 11 specifically.
+6. **`mermaid.initialize({ startOnLoad: false })`** — mandatory, no theme override needed (theme.js handles it)
+
+### `<head>` order
 
 1. CSS: `styles.css`, `presentation.css`
-2. Mermaid CDN + `mermaid.initialize({ startOnLoad: false, ... })`
+2. Mermaid CDN (`@11`) + `mermaid.initialize({ startOnLoad: false })`
 3. `theme.js`
 
-### Critical body script order (all `defer`)
+### Body script order (ALL must have `defer`)
 
 `mermaid-zoom.js` → `page-nav.js` → `scrollspy.js` → `presentation.js` → `enhancer.js` → `refs.js`
 
@@ -142,7 +174,23 @@ All scripts MUST have `defer`. Inconsistent `defer` causes race conditions.
 
 ## Component vocabulary
 
-The design system provides specific components for specific content types. Using the wrong one looks random even if the data is correct.
+The design system provides specific components for specific content types. **Only use class names that exist in `styles.css`.** If you type a class name, verify it exists. Invented classes produce unstyled elements.
+
+### Allowed CSS classes (exhaustive for atlas pages)
+
+**Layout:** `wrap`, `main`, `toc`
+**Cards:** `ve-card`, `ve-card__label`, `kpi-row`, `kpi-card`, `kpi-card__value`, `kpi-card__label`
+**Grids:** `grid-2`, `grid-3`, `card-grid`
+**Colour accents:** `c-rose`, `c-amber`, `c-emerald`, `c-teal`, `c-accent`, `c-slate`, `c-indigo`
+**Pipeline:** `pipeline`, `pipeline-step`, `step-name`, `step-detail`, `pipeline-arrow`
+**Diagrams:** `diagram-shell`, `diagram-shell__hint`, `mermaid-wrap`, `zoom-controls`, `zoom-label`, `mermaid-viewport`, `mermaid`, `mermaid-canvas`
+**Text:** `callout`, `subtitle`, `lead`, `section-label`, `anim`
+**Principles:** `principle`, `principle__num`, `principle__body`, `principle__title`, `principle__desc`
+**Tables:** `schema-table`
+**TOC:** `toc-back`, `toc-page`, `toc-page__title`, `toc-page__sections`, `is-active`, `is-collapsed`
+**Refs:** `chip` (on `<code>` elements with `data-ref`)
+
+**NOT in the stylesheet (do NOT use):** `card-row`, `card-tech`, `diagram-chrome`, `pipeline-group`, `pipeline-stages`, `pipeline-stage-name`, `pipeline-stage-desc`, `chip-row`, `kpi` (without `-card`)
 
 ### Domain concept → HTML component mapping
 
@@ -189,7 +237,7 @@ When 4+ back-to-back `<p>` blocks describe a sequence, convert to a structured v
 
 ## Canonical diagram-shell markup
 
-The exact contract that `mermaid-zoom.js` expects. Deviating causes failures.
+The exact contract that `mermaid-zoom.js` expects. **Deviating causes diagrams to not render at all.** This was the #1 failure in the first test — wrong button markup meant the zoom engine never initialized.
 
 ```html
 <section class="diagram-shell anim" style="--i:N" id="diagram-name">
@@ -218,10 +266,12 @@ The exact contract that `mermaid-zoom.js` expects. Deviating causes failures.
 **Critical details:**
 - Container MUST be `<section>`, not `<div>` (presentation mode targets `section[id]`)
 - `mermaid-canvas` div MUST also have the `mermaid` class
-- Zoom controls MUST be before viewport in DOM order
+- Zoom controls MUST be before viewport in DOM order, using `data-action` attributes (NOT class-based buttons)
 - Do NOT set `min-height` on `.mermaid-wrap` — `mermaid-zoom.js` sizes from SVG natural dimensions
 - `<script class="diagram-source">` MUST be a sibling of `.mermaid-wrap`, not inside it
 - Do NOT HTML-escape Mermaid source — it's inside `<script type="text/plain">` which is not parsed as HTML
+- Do NOT add `data-diagram` or `data-target` attributes — `mermaid-zoom.js` finds the canvas by DOM traversal, not attribute matching
+- Zoom buttons MUST use `type="button"` and `data-action="zoom-in|zoom-out|zoom-fit|zoom-one|zoom-expand"` — NOT `class="zoom-in"` or `aria-label` buttons
 
 ---
 
@@ -245,6 +295,14 @@ Identical markup in every page. `page-nav.js` handles expand/collapse.
 ```
 
 The TOC sections come from the `<section id="...">` elements in each page. Build the TOC after authoring all pages so section IDs are final.
+
+---
+
+## Rendering approach
+
+Render all pages sequentially in the same context window that ran ingest and modelling. The agent already has the IR, the codebase understanding, and the skill loaded. This guarantees structural consistency across pages.
+
+Atlas runs produce 2-4 pages. Sequential rendering in one context is the right approach — no delegation overhead, no consistency risk, no context assembly.
 
 ---
 
@@ -376,6 +434,9 @@ The agent reads the IR's depth and significance signals and adapts visual weight
 
 ## Pitfalls
 
+- **Don't invent CSS classes.** Every class you use must exist in `styles.css`. If you're typing a class name from memory, stop and check. This was the #1 styling failure in the first test — pages full of classes like `card-row`, `card-tech`, `diagram-chrome` that don't exist in the stylesheet.
+- **Don't omit the `.wrap` and `.main` wrappers.** Without `<div class="wrap">` containing `nav.toc` + `main.main`, the entire layout breaks — no sidebar, no content formatting. This was the #1 structural failure.
+- **Don't use class-based zoom buttons.** `class="zoom-in"` does nothing. `mermaid-zoom.js` binds to `data-action="zoom-in"`. Wrong buttons = diagrams never render.
 - **Don't use Mermaid C4 syntax** (`C4Context`, `C4Container`, `C4Component`). Experimental, renders poorly. Use `graph TD` with `classDef`. The .mmd files from Skill 1 should already follow this — verify.
 - **Don't set `min-height` on diagram containers.** `mermaid-zoom.js` handles sizing. Forced min-heights cause oversized containers for small diagrams.
 - **Don't use `<script type="module">` for local scripts.** Chrome blocks external ES modules on `file://` due to CORS. Use classic `<script src="..." defer>`.
@@ -394,10 +455,14 @@ The agent reads the IR's depth and significance signals and adapts visual weight
 
 ## Verification checklist
 
-Before declaring the HTML complete:
+Before declaring the HTML complete — **verify programmatically, don't trust visual inspection alone**:
 
 - [ ] **Every IR page rendered.** One HTML file per IR page, matching `atlas.yaml` manifest.
-- [ ] **Diagrams render.** Open each page in browser, verify Mermaid diagrams appear. Test with `python3 -m http.server 8765`.
+- [ ] **Structural scaffolding.** Grep every HTML file for `<div class="wrap">` and `<main class="main">` — both present in every page.
+- [ ] **Mermaid version.** Grep for `mermaid@` — all pages use `@11`, zero use `@10` or other.
+- [ ] **Zoom button markup.** Grep for `data-action="zoom-in"` — present in every diagram. Grep for `class="zoom-in"` — zero hits.
+- [ ] **No invented classes.** Grep for `class="card-row`, `class="card-tech`, `class="diagram-chrome`, `class="kpi c-` — zero hits for any of these.
+- [ ] **Diagrams render.** Serve with `python3 -m http.server 8765`, open each page, verify Mermaid diagrams appear.
 - [ ] **TOC works.** Multi-page TOC present in every page, section links scroll correctly.
 - [ ] **Presentation mode works.** Press P key, verify slides cycle through all sections.
 - [ ] **refs.js wired.** `data-ref` chips become GitHub links when enhancer.js loads.
