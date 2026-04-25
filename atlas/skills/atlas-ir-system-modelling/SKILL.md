@@ -131,6 +131,7 @@ For each confirmed page type, produce a YAML file under `pages/` that conforms t
    - State technology for each container
    - Include protocol in inter-container relationships
    - Decide: does each thing need to be running, or is it code within a container?
+   - **Container descriptions must include architectural substance:** for each container, capture (a) the key architectural mechanism that makes it work, (b) one concrete detail that reveals how it actually operates, (c) what would surprise someone encountering it for the first time. "Manages messaging platform adapters" is skeleton — "Caches agent instances with LRU eviction and 1-hour idle TTL; normalises all 17 platform message formats to a common (text, media, metadata, chat_id) tuple before routing to the agent" is muscle.
 
 3. **Components (L3)** — selective, one entry per container that warrants it
    - Only decompose containers where: ≥3 meaningful components exist AND they have architectural relationships worth diagramming
@@ -143,6 +144,7 @@ For each confirmed page type, produce a YAML file under `pages/` that conforms t
    - Can mix abstraction levels (systems, containers, components in one view)
    - Choose collaboration or sequence style per flow based on complexity
    - Include when the C4 page IS the primary behavioural reference (no separate sequences page)
+   - **When a dedicated sequences page exists:** do NOT duplicate flows on the C4 page. The C4 page owns structure (context, containers, components, deployment). The sequences page owns behaviour. If you put dynamic views on C4 AND detailed sequences on the sequences page, you get duplication. Pick one home per flow.
 
 6. **Deployment** — recommended
    - At minimum production. Include dev/staging if they differ meaningfully.
@@ -170,23 +172,29 @@ For each confirmed page type, produce a YAML file under `pages/` that conforms t
    - Names + relationships only. No fields, no types.
    - Show entities a human would name when describing the domain
    - Skip join tables, audit logs, migration tracking — infrastructure, not domain
+   - **Entity descriptions MUST include concrete substance:** actual DDL columns for DB entities, actual JSON keys for file-based entities, actual directory structure for filesystem entities. "A conversation between a user and the agent" is skeleton — add the muscle: what fields exist, what makes this entity's shape architecturally interesting, what would surprise someone reading the schema for the first time.
 
 2. **Domains** — when >~8 entities
    - Partition by bounded context / business capability, not by database schema
    - 2-6 domains typical. 1 = skip this section. 10+ = system might be multiple systems.
    - Cross-domain references as stubs, not full entities
 
-3. **Schema Detail** — selective, per domain
+3. **Schema Detail** — provide for ALL domains, not just the primary one
    - Full field-level for domains where the schema IS the architecture
    - Annotate architecturally significant fields: PKs, FKs, enums, JSON blobs, computed fields
    - Skip for trivial CRUD entities
+   - **Depth target:** if the gold-standard description of an entity would include actual field names, DDL, JSON structure, or file format — the IR must too. The IR captures the muscle (concrete detail) not just the skeleton (abstract description).
+   - For file-based entities: describe the actual file format, directory conventions, and key fields/sections.
+   - For in-memory entities: describe the class/struct shape, key attributes, lifecycle.
 
 4. **Wire Formats** — when containers exchange structured data
    - API payloads, event schemas, webhook bodies — data in flight, not at rest
    - Name producers and consumers
+   - Include the normalised internal message format if the system has one (the canonical representation all adapters convert to/from)
 
 5. **Config Structures** — when config structure IS the architecture
    - Include hierarchy/override order when it exists
+   - List actual config sections and key fields, not just "YAML config"
    - Skip when config is a straightforward .env file
 
 6. **Storage Topology** — when data spans multiple storage technologies
@@ -338,6 +346,7 @@ If the IR is so loose that projects are structurally incoherent → IR has under
 
 - **Don't include rendering hints in the IR.** No "render as card", no "use 3-column grid", no colour preferences. Domain language only. If you're typing a CSS class name or HTML element, stop.
 - **Don't duplicate content across pages.** Dynamic views (C4 page) and sequences (sequences page) serve different purposes. If the system only warrants one treatment, choose one home and skip the other.
+- **Enforce concept ownership.** Each concept should have ONE primary home across all pages. Other pages reference it with a one-line description and a cross-reference, not a full re-description at equal depth. Skills described fully on the diataxis page should be a brief reference on the data-model page, not described again at similar length. Track this mentally: "which page OWNS this concept?"
 - **Don't model everything.** The IR captures what's architecturally significant, not a comprehensive dump. Every section has a "when to skip" — use it.
 - **Don't skip modelling notes.** They're the diagnostic seam between understanding and rendering.
 - **Don't invent IR vocabulary.** If a concept isn't in the reference IR for its page type, it doesn't belong or the reference IR needs extending (deliberately, not ad-hoc).
