@@ -122,10 +122,13 @@ Every page MUST follow this exact skeleton. Do NOT deviate from this structure �
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{Page Title} — {System Name} Atlas</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Fira+Code:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="base/styles.css">
   <link rel="stylesheet" href="base/presentation.css">
   <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
-  <script>mermaid.initialize({ startOnLoad: false, theme: 'dark', themeVariables: { ... }});</script>
+  <script>mermaid.initialize({ startOnLoad: false, theme: 'dark', themeVariables: { primaryColor: '#1e293b', primaryTextColor: '#e2e8f0', lineColor: '#475569', secondaryColor: '#0f172a', tertiaryColor: '#1e293b' }});</script>
   <script src="base/theme.js"></script>
 </head>
 <body>
@@ -158,9 +161,10 @@ Every page MUST follow this exact skeleton. Do NOT deviate from this structure �
 
 ### `<head>` order
 
-1. CSS: `styles.css`, `presentation.css`
-2. Mermaid CDN (`@11`) + `mermaid.initialize({ startOnLoad: false })`
-3. `theme.js`
+1. Google Fonts preconnect + DM Sans + Fira Code stylesheet link
+2. CSS: `styles.css`, `presentation.css`
+3. Mermaid CDN (`@11`) + `mermaid.initialize({ startOnLoad: false, theme: 'dark', themeVariables: { primaryColor: '#1e293b', primaryTextColor: '#e2e8f0', lineColor: '#475569', secondaryColor: '#0f172a', tertiaryColor: '#1e293b' } })`
+4. `theme.js`
 
 ### Body script order (ALL must have `defer`)
 
@@ -302,7 +306,27 @@ The TOC sections come from the `<section id="...">` elements in each page. Build
 
 Render all pages sequentially in the same context window that ran ingest and modelling. The agent already has the IR, the codebase understanding, and the skill loaded. This guarantees structural consistency across pages.
 
-Atlas runs produce 2-4 pages. Sequential rendering in one context is the right approach — no delegation overhead, no consistency risk, no context assembly.
+**Do NOT delegate HTML rendering to subagents.** Atlas runs produce 2-4 pages. Sequential rendering in one context is the only correct approach — delegation loses the shared design system context, risks structural inconsistency, and the user has explicitly rejected it. Even for 4 pages, sequential is fast enough via `execute_code`.
+
+### Efficient rendering with execute_code
+
+Build a shared helper dict in the first `execute_code` call — TOC markup, HEAD template, FOOT template, and a `ds()` function for diagram shells. Save to a temp file (e.g. `/tmp/atlas_helpers.json`). Then render each page in a separate `execute_code` call that loads the helpers. This avoids duplicating boilerplate across pages and keeps each call focused on one page's content.
+
+```python
+# First call: build helpers
+import json
+# ... build TOC, HEAD_TPL, FOOT, diagram_shell function
+with open("/tmp/atlas_helpers.json", "w") as f:
+    json.dump({"TOC": TOC, "HEAD": HEAD_TPL, "FOOT": FOOT}, f)
+
+# Each subsequent call: render one page
+from hermes_tools import write_file
+with open("/tmp/atlas_helpers.json") as f:
+    H = json.load(f)
+# ... use H["TOC"], H["HEAD"], H["FOOT"] + inline ds() function
+```
+
+Also load all `.mmd` diagram sources into a dict at the start and save as `diagrams.json` — the `ds()` function reads from this to embed Mermaid sources into `<script type="text/plain">` blocks.
 
 ---
 
@@ -330,9 +354,9 @@ Read `pages/data-model.yaml`:
 
 | IR section | HTML treatment |
 |---|---|
-| `entity_map` | Orienting prose + erDiagram diagram-shell |
+| `entity_map` | Orienting prose + erDiagram diagram-shell. Entity descriptions should be rendered as ve-cards with concrete detail — actual fields, actual formats. NOT just abstract one-liners. |
 | `domains[]` | One section per domain, diagram-shell with domain-specific ER |
-| `schema_detail[]` | Schema tables (`.schema-table`) per entity — fields, types, constraints |
+| `schema_detail[]` | Schema tables (`.schema-table`) per entity — fields, types, constraints. **Provide schema detail for ALL domains where the schema is non-trivial**, not just the primary domain. |
 | `wire_formats[]` | ve-cards or schema-tables depending on complexity |
 | `config[]` | ve-cards with key fields listed |
 | `storage_topology` | Diagram if present, otherwise ve-cards for stores |
@@ -442,7 +466,7 @@ The agent reads the IR's depth and significance signals and adapts visual weight
 - **Don't use `<script type="module">` for local scripts.** Chrome blocks external ES modules on `file://` due to CORS. Use classic `<script src="..." defer>`.
 - **Don't use opaque section IDs.** `#s0`, `#section-4` → bad. `#containers`, `#agent-loop` → good.
 - **Don't add inline styles for component-level styling.** Use the design system classes. If a visual pattern recurs, it belongs in `styles.css`.
-- **Don't forget `mermaid.initialize({ startOnLoad: false })`.** Without it, Mermaid auto-renders on DOMContentLoaded, racing with `mermaid-zoom.js`. Symptom: diagrams flash, render twice.
+- **Don't forget `mermaid.initialize({ startOnLoad: false, theme: 'dark', themeVariables: {...} })`.** Without `startOnLoad: false`, Mermaid auto-renders on DOMContentLoaded, racing with `mermaid-zoom.js`. Without `theme: 'dark'` and the themeVariables, diagrams render with Mermaid's garish defaults instead of the atlas palette. The exact themeVariables are in the HEAD template above.
 - **Don't forget `defer` on ALL body scripts.** Inconsistent `defer` causes race conditions between page-nav, scrollspy, and mermaid-zoom.
 - **Don't use `graph LR` with unlinked subgraphs.** Mermaid stacks them vertically. Add invisible link `subA ~~~ subB` for side-by-side.
 - **Edge label clipping.** Mermaid v11 clips the last 1-2 chars of `graph TD` edge labels. Append `&ensp;` to the label text. Do NOT use `&ensp;` in `sequenceDiagram` — it's passed literally and breaks parsing.
