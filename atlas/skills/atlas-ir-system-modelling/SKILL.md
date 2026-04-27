@@ -535,6 +535,8 @@ If the IR is so loose that projects are structurally incoherent → IR has under
 
 ### Pipeline discipline
 - **Don't stop to ask mid-pipeline.** The only user checkpoint is the invocation confirmation at the start. After that, the pipeline runs autonomously: ingest → model → render. Structural judgments go in `modelling_notes`, not in messages asking "agree?"
+- **Don't use execute_code to bulk-write IR YAML.** Use `write_file` for each artifact individually. execute_code with 20K+ char string literals is fragile, hard to debug, and produces opaque failures. Each YAML page, each .mmd diagram, refs.json — write them one at a time with write_file. The agent's reasoning about each artifact should be visible in the conversation, not buried inside a script.
+- **Budget context for production, not just ingest.** Cold-start ingest on a large codebase can consume most of the context window. Be selective during discovery — read READMEs, entry points, schemas, and configs. Don't read every source file. The goal is structural understanding sufficient to produce IR, not line-by-line familiarity. If ingest consumes so many tokens that IR production can't complete, the ingest was too aggressive.
 
 ---
 
