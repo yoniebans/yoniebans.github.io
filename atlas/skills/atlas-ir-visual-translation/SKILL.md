@@ -5,7 +5,7 @@ maturity: "v0.2, April 2026. First test revealed structural failures — fixes a
 metadata:
   hermes:
     tags: [atlas, ir, html, rendering, design-system, mermaid]
-    related_skills: [atlas-ir-system-modelling, atlas-source-ingest, atlas-drift-detection]
+    related_skills: [atlas-ir-system-modelling, atlas-drift-detection]
 ---
 
 # Atlas IR — Visual Translation (Skill 2)
@@ -14,7 +14,7 @@ Reads the IR YAML produced by `atlas-ir-system-modelling` and renders it as inte
 
 The IR funnels system understanding into domain structure. This skill fans it back out into visual richness. The agent brings creative latitude — choosing when to use boxes vs bullets, labels vs prose, mini-diagrams vs description — but works from structured understanding, not from raw code.
 
-**Trigger:** Runs immediately after `atlas-ir-system-modelling` completes. Same context window. The IR YAML is on disk; the agent also has the codebase understanding still loaded from `atlas-source-ingest`. The pipeline is autonomous: the user reviews the final HTML output.
+**Trigger:** Runs immediately after `atlas-ir-system-modelling` completes. Same context window. The IR YAML is on disk; the agent also has the codebase understanding still loaded. The pipeline is autonomous: the user reviews the final HTML output.
 
 ---
 
