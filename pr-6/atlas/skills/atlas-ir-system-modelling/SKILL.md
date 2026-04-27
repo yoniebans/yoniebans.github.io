@@ -258,6 +258,14 @@ The HTML output from `atlas-ir-visual-translation` goes into the same output dir
 
 ---
 
+### Direct authoring rule
+
+**Write each IR artifact using `write_file`, not `execute_code`.** The YAML content must be the model's direct output — not a string literal embedded in a Python script. When you use write_file, every line of YAML flows from your full latent understanding with full attention. When you wrap YAML inside execute_code, you're generating code that generates artifacts — an extra serialisation layer that compresses away detail.
+
+Write one page at a time. After writing each page, you can read it back to verify. This forces deliberate attention on each page rather than batch-generating everything in a rush.
+
+The same applies to Mermaid diagrams — write each `.mmd` file individually with `write_file`.
+
 ### Step 1 — Write atlas.yaml
 
 Root manifest. Deliberately minimal — identity and page list only.
@@ -458,6 +466,7 @@ Use `stroke-dasharray: 5 5` for planned/future components.
 - **Disconnected subgraphs in LR mode:** Add invisible link `subA ~~~ subB` to force side-by-side.
 - **Node labels:** Use `["Label<br/><small>Description</small>"]` for `graph TD` nodes only.
 - **No `<br/>` in sequenceDiagram.** `<br/>` is valid in `graph TD` node labels (HTML-like formatting) but causes parse errors in `sequenceDiagram` arrow labels and notes. Mermaid sequence diagrams use `\n` for line breaks inside labels, not HTML. First test failure: all 5 sequence diagrams had `<br/>` in arrow labels and failed to render.
+- **Avoid Mermaid reserved words as participant names in sequenceDiagram.** `Loop`, `Rect`, `Alt`, `Opt`, `Par`, `Break`, `Critical`, `End`, `Note` are reserved keywords. Using them as bare participant names causes parse errors (e.g. `Caller->>Loop:` fails). Always alias: `participant AL as Conversation Loop`. This broke agent-loop and tool-execution diagrams in the April 2026 hermes-agent atlas run.
 - **Keep diagrams readable.** If a diagram exceeds ~15 nodes, split it and document the split rationale in the IR.
 
 ---
@@ -520,6 +529,7 @@ If the IR is so loose that projects are structurally incoherent → IR has under
 - **Don't guess the mode.** If it's unclear whether IR exists or what state it's in, check the filesystem. If it's ambiguous whether this is a general update or PR review, ask.
 
 ### IR production
+- **Don't use execute_code to write IR YAML or Mermaid diagrams.** Use `write_file` for every artifact. The YAML must be your direct output, not a string literal inside a Python script. execute_code adds a serialisation layer that compresses away the detail your latent understanding carries. This was the primary failure mode in iteration 1 — the agent had 33% context headroom but produced thinner output because it batch-generated YAML through scripts instead of authoring it directly.
 - **Don't include rendering hints in the IR.** No "render as card", no "use 3-column grid", no colour preferences. Domain language only. If you're typing a CSS class name or HTML element, stop.
 - **Don't duplicate content across pages.** Dynamic views (C4 page) and sequences (sequences page) serve different purposes. If the system only warrants one treatment, choose one home and skip the other.
 - **Enforce concept ownership.** Each concept should have ONE primary home across all pages. Other pages reference it with a one-line description and a cross-reference, not a full re-description at equal depth. Track this mentally: "which page OWNS this concept?"
