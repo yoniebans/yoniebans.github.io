@@ -58,10 +58,44 @@ Per-section analysis in `/mnt/hermes/workspace/atlas-loop/001/evaluation.md`. Ke
 - Plugin System entirely absent
 - C4 dynamic views overlap with sequences page
 
-### Scoring
+### Pipeline run (2026-04-27)
 
-**Not yet scored.** Previous iteration 1 scoring was invalid — the agent hand-wrote IR and HTML instead of running the pipeline, so those metrics were meaningless. Scoring will be established by running the actual pipeline with the updated skills and comparing against iteration 0 baseline.
+Session `20260427_110652_ecf622`. 44 API calls, 119 messages, peak context ~135k/200k (67%).
 
-### Outcome
+#### IR Line Counts
 
-**Pending pipeline run.** Skill changes committed. Next step: run the pipeline end-to-end with the merged skill against hermes-agent, then score the real output.
+| Page | Iter 0 | Iter 1 | Delta |
+|------|--------|--------|-------|
+| c4-architecture | 561 | 385 | -31% |
+| data-model | 287 | 272 | -5% |
+| sequences | 429 | 279 | -35% |
+| documentation-map | 231 | 214 | -7% |
+| **Total** | **1508** | **1150** | **-24%** |
+
+#### HTML Character Counts
+
+| Page | Iter 0 | Iter 1 | Gold Std | Iter1/Gold |
+|------|--------|--------|----------|-----------|
+| index.html | 43,824 | 28,903 | 45,474 | 0.64 |
+| data-model.html | 21,326 | 18,829 | 56,043 | 0.34 |
+| sequences.html | 22,641 | 19,631 | 47,414 | 0.41 |
+| diataxis.html | 21,663 | 16,826 | 44,005 | 0.38 |
+| **Total** | **109,454** | **84,189** | **192,936** | **0.44** |
+
+#### Scoring
+
+| Metric | Iter 0 | Iter 1 | Delta | Target |
+|--------|--------|--------|-------|--------|
+| Coverage | 73% | 74% | +1 | >85% |
+| Depth (% shallow) | 31% | 19% | **-12** | <15% |
+| Ownership duplicates | 6 | 0 | **-6** | 0 ✓ |
+| Repetition index | 4 | 0-1 | **-3** | <5 ✓ |
+| Visual fitness | 79% | 74% | -5 | >80% |
+
+### Learnings
+
+- **What worked:** Depth guidance produced richer per-section descriptions (container substance, entity schema detail, memory format specifics). Ownership semantics eliminated all cross-page duplication. Dynamic views correctly omitted from C4 page. Schema detail provided for 3 of 4 domains.
+- **What didn't work:** Overall output volume regressed 23%. The agent included fewer containers (11 vs 16), shorter sequences, sparser diagrams. The skill told it HOW to describe things but not WHAT to include — it chose quality over quantity.
+- **Root cause:** NOT context pressure (33% headroom). Two problems: (1) The agent used `execute_code` to batch-write YAML/HTML instead of direct `write_file` authoring — the extra serialisation layer compresses detail. (2) The skill lacks minimum-coverage guidance — the agent can omit subsystems without justification.
+- **Fixes applied (same branch):** Added direct authoring rule to both skills — `write_file` for every artifact, no `execute_code`. Added pitfall with iteration 1 evidence.
+- **What iteration 2 should target:** Coverage enforcement (completeness check step), rendering fidelity (HTML tables for schema detail), RL/Training content gap.
