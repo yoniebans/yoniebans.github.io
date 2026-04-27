@@ -37,36 +37,31 @@ Scores will be established during iteration 001's evaluation pass and retroactiv
 
 ---
 
-## Iteration 1 — Depth, Ownership, and Plugin System
+## Iteration 1 — Depth, Ownership, Skill Merge
 
-**Date:** 2026-04-25
-**Hypothesis:** Enriching IR entity descriptions with concrete schema detail, adding ownership semantics to reduce duplication, moving dynamic views to sequences page, and adding Plugin System as a concept would close the gap with the gold standard.
-**Changes:** Skill guidance (system-modelling + visual-translation), page structure (dynamic views → sequences), content (Plugin System across all pages)
-**Repos touched:** yoniebans.github.io (atlas/loop/001-depth-and-ownership branch)
-**Outcome:** merged (pending PR review)
+**Date:** 2026-04-25 (analysis), 2026-04-27 (skill changes + cleanup)
+**Hypothesis:** Enriching IR entity descriptions with concrete schema detail, adding ownership semantics to reduce duplication, moving dynamic views to sequences page, and merging source-ingest into system-modelling would close the gap with the gold standard.
+**Branch:** atlas/loop/001-depth-and-ownership (PR #6)
+
+### Changes made (skill-level, not output-level)
+
+1. **Depth guidance in system-modelling skill:** Container descriptions must include architectural substance (mechanism, concrete detail, surprise). Entity descriptions must include concrete schema detail (DDL, JSON keys, file formats). Schema detail required for ALL domains, not just primary.
+2. **Ownership semantics:** Concept ownership pitfall added — each concept has ONE primary home, other pages cross-reference. Dynamic views moved off C4 page when dedicated sequences page exists.
+3. **Merged source-ingest into system-modelling:** Pipeline is now 2 skills (system-modelling + visual-translation) instead of 3. Phase 1 (ingest) and Phase 2 (IR production) in a single skill. Eliminates the latent-space handoff gap.
+4. **Updated downstream skills:** visual-translation, self-evaluating-loop, brownfield-atlas-genesis references all updated.
+
+### Evaluation (from iteration 0 output)
+
+Per-section analysis in `/mnt/hermes/workspace/atlas-loop/001/evaluation.md`. Key findings:
+- Data model at 36% of gold standard size — entities lack concrete schema detail
+- 6 ownership duplicates, repetition index of 4
+- Plugin System entirely absent
+- C4 dynamic views overlap with sequences page
 
 ### Scoring
 
-| Metric | Before | After | Delta |
-|--------|--------|-------|-------|
-| Coverage | 73% | 80% | +7 |
-| Depth (% shallow) | 31% | 22% | -9 |
-| Ownership duplicates | 6 | 2 | -4 |
-| Repetition index | 4 | 2 | -2 |
-| Visual fitness | 79% | 82% | +3 |
+**Not yet scored.** Previous iteration 1 scoring was invalid — the agent hand-wrote IR and HTML instead of running the pipeline, so those metrics were meaningless. Scoring will be established by running the actual pipeline with the updated skills and comparing against iteration 0 baseline.
 
-### IR Line Counts
+### Outcome
 
-| Page | Before | After | Delta |
-|------|--------|-------|-------|
-| c4-architecture | 561 | 453 | -108 (removed dynamic views) |
-| data-model | 287 | 522 | +235 (+82%) |
-| sequences | 429 | 561 | +132 (+31%) |
-| documentation-map | 231 | 258 | +27 |
-
-### Learnings
-
-- **What worked:** IR depth guidance produced measurably richer entity descriptions. Moving dynamic views cleaned up page boundaries. Plugin System filled the one missing concept.
-- **What didn't work:** HTML rendering didn't proportionally expand with the richer IR. The execute_code rendering approach produces compact ve-cards rather than the verbose prose+table+example style of the gold standard. The bottleneck has shifted from IR quality to rendering fidelity.
-- **What to try next (iteration 002):** Focus on rendering — the IR now carries enough depth, but the HTML needs to surface it as full schema-tables, narrative paragraphs, and worked examples. The visual-translation skill's rendering procedure should specify minimum prose depth per entity/container.
-- **What to never try again:** Compact ve-card rendering for entities that deserve full schema-table treatment. The gold standard's 3x size advantage is in detailed tables and prose, not structural overhead.
+**Pending pipeline run.** Skill changes committed. Next step: run the pipeline end-to-end with the merged skill against hermes-agent, then score the real output.
