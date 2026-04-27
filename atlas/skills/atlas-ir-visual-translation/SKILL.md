@@ -46,6 +46,14 @@ The canonical design system lives at the root of [yoniebans/yoniebans.github.io]
 
 ---
 
+## Direct authoring rule
+
+**Write each HTML page using `write_file`, not `execute_code`.** The HTML must be the model's direct output — not assembled by a Python script. When you use write_file, every element, every class choice, every prose paragraph flows from your full latent understanding with full attention. When you generate HTML through execute_code, you're writing code that writes markup — an extra serialisation layer that produces compact ve-cards where the gold standard has rich prose+tables+examples.
+
+Write one page at a time. This forces deliberate visual judgment on each page rather than batch-rendering everything through a script.
+
+---
+
 ## Output structure
 
 One HTML file per IR page, plus design system via submodule:
@@ -458,6 +466,7 @@ The agent reads the IR's depth and significance signals and adapts visual weight
 
 ## Pitfalls
 
+- **Don't use execute_code to generate HTML.** Use `write_file` for every page. The HTML must be your direct output, not assembled by a Python script. execute_code produces compact ve-cards and thin prose because it adds a serialisation layer between your understanding and the output. The gold standard's richness — detailed tables, narrative paragraphs, worked examples — requires direct authoring with full attention on every element.
 - **Don't invent CSS classes.** Every class you use must exist in `styles.css`. If you're typing a class name from memory, stop and check. This was the #1 styling failure in the first test — pages full of classes like `card-row`, `card-tech`, `diagram-chrome` that don't exist in the stylesheet.
 - **Don't omit the `.wrap` and `.main` wrappers.** Without `<div class="wrap">` containing `nav.toc` + `main.main`, the entire layout breaks — no sidebar, no content formatting. This was the #1 structural failure.
 - **Don't use class-based zoom buttons.** `class="zoom-in"` does nothing. `mermaid-zoom.js` binds to `data-action="zoom-in"`. Wrong buttons = diagrams never render.
@@ -474,6 +483,8 @@ The agent reads the IR's depth and significance signals and adapts visual weight
 - **Don't duplicate diagram source.** The `.mmd` files are the source of truth. Embed their content into `<script type="text/plain" class="diagram-source">` — don't rewrite or hand-modify the Mermaid in HTML.
 - **Don't hardcode GitHub links.** Use `data-ref` attributes and let `enhancer.js` + `refs.js` handle link generation.
 - **Paragraph length.** No paragraph longer than 3 lines. The atlas is for scanning, not reading. If it's longer, restructure into a visual component.
+- **Don't use Python `.format()` when building HTML with Mermaid/JS.** The `{startOnLoad: false}` in `mermaid.initialize()` and other JS object literals cause `KeyError` in Python's `.format()`. Use `.replace("{title}", value)` instead. This broke the first render attempt in the April 2026 hermes-agent atlas run.
+- **Avoid Mermaid reserved words as participant names.** `Loop`, `Rect`, `Alt`, `Opt`, `Par`, `End`, `Note` etc. are reserved in `sequenceDiagram`. Using them as bare participant names causes silent parse errors (diagram shows "Error:" instead of rendering). Always alias: `participant AL as Conversation Loop`. Verify all sequence diagrams render by checking for `graphics-document` in the accessibility tree (or absence of "Error:" text).
 
 ---
 
