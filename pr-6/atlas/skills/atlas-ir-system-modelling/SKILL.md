@@ -1,28 +1,188 @@
 ---
 name: atlas-ir-system-modelling
-description: "IR YAML producer — second phase of the atlas IR pipeline. Takes the agent's loaded understanding (from atlas-source-ingest) and expresses it as structured, domain-specific IR YAML pages + Mermaid .mmd diagram files. Makes structural judgments (page types, decomposition depth, flow selection). Does NOT make rendering decisions. Runs in the same context window as atlas-source-ingest."
-maturity: "v0.2, April 2026. First roundtrip test completed — IR output passed audit, sequence diagram <br/> issue fixed."
+description: "Ingest a codebase and produce structured IR YAML — the first two phases of the atlas pipeline in a single skill. Loads structural understanding (three modes: cold start, IR delta, PR review), then expresses it as domain-specific IR YAML pages + Mermaid .mmd diagrams. Makes all structural judgments autonomously. Does NOT render — visual translation is a separate skill."
+maturity: "v0.3, April 2026. Merged source-ingest into modelling — single skill covers ingest + IR production. Depth improvements from self-evaluating loop iteration 1."
 metadata:
   hermes:
-    tags: [atlas, ir, architecture, modelling, c4, documentation]
-    related_skills: [atlas-source-ingest, atlas-ir-visual-translation, atlas-drift-detection]
+    tags: [atlas, ir, architecture, modelling, c4, documentation, codebase, analysis]
+    related_skills: [atlas-ir-visual-translation, atlas-drift-detection]
 ---
 
-# Atlas IR — System Modelling (Skill 1)
+# Atlas IR — System Modelling
 
-Takes the agent's loaded understanding of a codebase (from `atlas-source-ingest`, running in the same context window) and produces structured IR YAML — C4 for architecture, entity-relationship for data, flow/sequence for behaviour, Diátaxis for conceptual orientation.
+Loads structural understanding of a codebase, then produces structured IR YAML — C4 for architecture, entity-relationship for data, flow/sequence for behaviour, Diátaxis for conceptual orientation. This skill covers the full path from source code to IR. Visual translation into HTML is `atlas-ir-visual-translation`'s job.
 
-**This skill produces the model. It does NOT render anything.** No HTML, no CSS, no grid layouts, no card types. Visual translation is Skill 2's job (`atlas-ir-visual-translation`).
+**This skill produces the IR model. It does NOT render anything.** No HTML, no CSS, no grid layouts, no card types.
 
-**Trigger:** Runs immediately after `atlas-source-ingest` has loaded codebase understanding into context. Same context window — no intermediate artifact between ingest and modelling. The pipeline is autonomous: ingest → model → render. The user reviews the final output.
+**Pipeline:** ingest → model → render. This skill owns the first two phases. The user reviews the final HTML output (after visual translation), not the IR directly.
 
 ---
 
-## Pre-flight reads (mandatory)
+## Invocation
 
-### Reference IR templates
+The user triggers the pipeline by loading this skill and `atlas-ir-visual-translation`, then providing a prompt. The agent needs three things to proceed:
 
-Load only the templates for confirmed page types. These are the CONTRACTS between Skill 1 and Skill 2 — nothing should be produced that doesn't align with them.
+1. **Source repo** — path to the codebase under investigation
+2. **Output directory** — where the IR YAML and rendered HTML will be written
+3. **Mode** — cold start, IR delta, or PR review (can often be inferred)
+
+Example invocation:
+```
+hermes -s atlas-ir-system-modelling,atlas-ir-visual-translation
+```
+Then: "Build an atlas for /mnt/hermes/source/hermes-agent-data-pipeline, output to /mnt/hermes/workspace/hermes-agent-data-pipeline-atlas/"
+
+**Before proceeding, confirm with the user:**
+
+Present what the agent has inferred and get approval:
+
+1. **Source repo:** path, name, what it appears to be
+2. **Detected mode:** cold start / IR delta / PR review, and why
+3. **Output directory:** where IR and HTML will be written
+4. **Any ambiguities** — flag them, propose a default, ask
+
+Only proceed after the user confirms. This is the one user checkpoint in the pipeline — everything after runs autonomously.
+
+---
+
+## Mode detection
+
+Determine which mode to use before starting analysis:
+
+1. Does an `atlas/` directory with IR YAML exist for this project?
+   - No → **Cold start**
+   - Yes → Is this a PR review or general update?
+     - PR/branch → **PR review**
+     - General → **IR delta**
+
+If ambiguous, ask the user. Don't guess.
+
+---
+
+## Phase 1 — Source ingest
+
+Load structural understanding of the codebase into context. The approach depends on the mode. **This phase produces no artifact** — its output is the agent's contextual understanding, consumed directly by phase 2.
+
+### Cold start
+
+Full codebase analysis. The agent knows nothing — build structural understanding from scratch.
+
+**What to inspect (parallel where possible):**
+
+**Filesystem shape:**
+- `find <dir> -maxdepth 3 -type d` — container/module layout
+- `search_files target=files pattern='*.md'` — existing docs
+- Entry points: `main.py`, `index.ts`, `cmd/`, `bin/`, CLI entry, API routes
+- Build/deploy config: `docker-compose.yml`, `Dockerfile`, k8s manifests, `Procfile`, CI configs, `fly.toml`, `render.yaml`
+
+**Schema and data:**
+- ORM models, `CREATE TABLE`, migration files
+- Prisma, SQLAlchemy, Django models, protobuf/gRPC definitions
+- Pydantic models, Zod schemas, JSON Schema files
+- Config files with structured data (YAML, TOML, JSON)
+
+**Surface area:**
+- Public APIs, webhook receivers, CLI commands, event listeners
+- `search_files pattern='^(class |def |export |interface |type )' file_glob='*.py'` (adapt glob per language)
+- Route definitions, handler registrations
+
+**Existing documentation:**
+- README.md — often the single best orientation source. Read first.
+- docs/, wiki/, ARCHITECTURE.md, DESIGN.md, ADRs
+- Inline doc comments on public interfaces
+- Existing diagrams (Mermaid, PlantUML, images in docs/)
+
+**Dependencies and external systems:**
+- `requirements.txt`, `pyproject.toml`, `package.json`, `go.mod`, `Cargo.toml`
+- External service integrations (API clients, SDKs, message queue consumers)
+- IaC (Terraform, Pulumi, CDK) — reveals infrastructure dependencies
+
+**Use parallel tool calls.** This is the biggest timesaver. File reads, search_files, and web_extract (for hosted docs) can all run in parallel. Don't serialise what can be parallelised.
+
+**What to extract (mental model, not artifact):**
+
+After inspection, the agent should be able to answer:
+
+- **What does this system do?** One sentence.
+- **What are the runtime boundaries?** What needs to be running?
+- **What persists?** What data, where, what shape?
+- **What are the entry points?** How does work arrive?
+- **What are the external dependencies?** What does this system talk to?
+- **What are the 3-5 flows that define how it works?** The interactions that make everything else predictable.
+- **What's surprising?** Non-obvious mechanisms, unusual patterns, things that would catch someone off guard.
+
+### IR delta
+
+IR exists. Code has changed. Understand what's different.
+
+**Step 1 — Load existing IR.** Read the current IR YAML files from `atlas/pages/`. This is the agent's baseline understanding. Read `atlas/atlas.yaml` for the manifest. Skim `.mmd` diagram files in `atlas/diagrams/` if the IR references them.
+
+**Step 2 — Determine what changed.**
+
+```bash
+# What files changed since IR was last committed?
+git log --oneline -1 atlas/  # when was IR last updated?
+git diff <ir-commit>..HEAD --stat  # what changed since then?
+git diff <ir-commit>..HEAD --name-only  # file list
+```
+
+If the IR isn't git-tracked, fall back to modification timestamps or ask the user what changed.
+
+**Step 3 — Scoped analysis.** Only inspect the parts of the codebase that changed:
+
+- **New files/directories** — new containers? new components? new schemas?
+- **Modified schemas** — entities added/removed/changed?
+- **Modified entry points** — new flows? Changed flow mechanics?
+- **Modified config** — new containers, new external dependencies?
+- **Deleted files** — containers removed? Components gone?
+
+Map each change back to which IR page(s) it affects:
+- New/changed containers → c4-architecture.yaml
+- Schema changes → data-model.yaml
+- Flow changes → sequences.yaml
+- New extension points, design changes → documentation-map.yaml
+
+### PR review
+
+Scoped to a specific PR or branch. The goal isn't full system understanding — it's understanding what THIS change affects architecturally.
+
+**Step 1 — Load existing IR.** Same as IR delta step 1.
+
+**Step 2 — Read the PR.**
+
+```bash
+git diff main...<branch> --stat
+git diff main...<branch> --name-only
+git diff main...<branch>  # full diff if manageable
+git log main...<branch> --oneline  # commit messages for intent
+```
+
+Also read: PR description, linked issues, commit messages. These carry intent that the diff alone doesn't.
+
+**Step 3 — Assess architectural impact.** For each changed file, ask: does this change affect the system's architecture as captured in the IR?
+
+Most PR changes are **IR-invisible** — bug fixes, refactors, test additions, dependency bumps.
+
+Changes that ARE IR-visible:
+- New container, removed container, container responsibility change
+- New entity, schema change to architecturally significant fields
+- New flow, changed flow mechanics (new participants, different steps)
+- New extension point, changed design principle
+- New external dependency, removed integration
+
+If no architectural impact, note that in the output and skip phase 2. If IR-visible changes exist, proceed to phase 2.
+
+---
+
+## Phase 2 — IR production
+
+The agent now has structural understanding loaded (from phase 1). Express it as IR YAML.
+
+### Pre-flight reads (mandatory)
+
+#### Reference IR templates
+
+Load only the templates for confirmed page types. These are the CONTRACTS between this skill and `atlas-ir-visual-translation` — nothing should be produced that doesn't align with them.
 
 The reference IRs live inside this skill's `references/` directory. Load them with `skill_view`:
 
@@ -39,17 +199,24 @@ skill_view(name="atlas-ir-system-modelling", file_path="references/c4-architectu
 
 The canonical copies also live in `atlas/specs/reference-ir/` in the yoniebans.github.io repo, but the skill-local copies are the portable contract.
 
-### Protocol spec
+#### Protocol spec
 
 Skim if not already familiar — the protocol spec lives in `atlas/specs/001-atlas-ir-layer.md` in the yoniebans.github.io repo.
 
-### Discovery notes
+### Decision-making
 
-Not needed — `atlas-source-ingest` runs in the same context window. The agent already has the codebase understanding loaded.
+The agent makes all structural judgments autonomously:
+
+- **Page selection:** Which IR pages the system warrants (C4 always, data model if persistent state, sequences if ≥3 flows, documentation map if complex enough)
+- **L3 candidates:** Which containers have ≥3 meaningful internal parts with architectural relationships
+- **Flow selection:** The 3-5 flows that define how the system thinks
+- **Boundary calls:** What's a container vs component, what's external vs owned, where to decompose
+
+Every judgment gets documented in `modelling_notes` in the IR. The user reviews the final output (IR + HTML), not the plan. If a call was wrong, the modelling notes explain the reasoning so it can be corrected.
 
 ---
 
-## Page type selection framework
+### Page type selection framework
 
 Decide which pages the system warrants autonomously. Document the reasoning in `modelling_notes`.
 
@@ -64,7 +231,7 @@ Decide which pages the system warrants autonomously. Document the reasoning in `
 
 ---
 
-## Output directory structure
+### Output directory structure
 
 The output directory is specified by the user at invocation. All IR artifacts go here:
 
@@ -87,11 +254,11 @@ The output directory is specified by the user at invocation. All IR artifacts go
 └── refs.json                     # concept → source repo path mappings
 ```
 
-The HTML output from Skill 2 (`atlas-ir-visual-translation`) goes into the same output directory alongside the IR.
+The HTML output from `atlas-ir-visual-translation` goes into the same output directory alongside the IR.
 
 ---
 
-## Step 1 — Write atlas.yaml
+### Step 1 — Write atlas.yaml
 
 Root manifest. Deliberately minimal — identity and page list only.
 
@@ -109,15 +276,15 @@ pages:                            # only list confirmed pages
   # - documentation-map.yaml
 ```
 
-Rendering decisions (scripts, styles, animation) belong in Skill 2 and the design system, NOT here.
+Rendering decisions (scripts, styles, animation) belong in `atlas-ir-visual-translation` and the design system, NOT here.
 
 ---
 
-## Step 2 — Model each page type
+### Step 2 — Model each page type
 
 For each confirmed page type, produce a YAML file under `pages/` that conforms to its reference IR template. Work through the sections in zoom order — orientation first, then detail, then insight.
 
-### C4 Architecture
+#### C4 Architecture
 
 **Modelling procedure (zoom order):**
 
@@ -164,7 +331,7 @@ For each confirmed page type, produce a YAML file under `pages/` that conforms t
 | Microservices? | Single-team: each is a group of containers within one system. Multi-team: each is promoted to its own software system. |
 | Split container diagram? | Split when >8-10 containers, or natural groupings exist. State split rationale. |
 
-### Data Model
+#### Data Model
 
 **Modelling procedure (zoom order):**
 
@@ -201,7 +368,7 @@ For each confirmed page type, produce a YAML file under `pages/` that conforms t
    - Physical reality behind the logical model
    - Skip for single-database systems
 
-### Sequences
+#### Sequences
 
 **Modelling procedure (zoom order):**
 
@@ -229,7 +396,7 @@ For each confirmed page type, produce a YAML file under `pages/` that conforms t
 - Shows a non-obvious mechanism (compression, retry, delegation)
 - Represents a category of interaction (one CRUD flow stands for all CRUD)
 
-### Documentation Map
+#### Documentation Map
 
 **Modelling procedure (zoom order):**
 
@@ -260,11 +427,11 @@ For each confirmed page type, produce a YAML file under `pages/` that conforms t
 
 ---
 
-## Step 3 — Author Mermaid diagrams
+### Step 3 — Author Mermaid diagrams
 
 Every `diagram:` path referenced in the IR gets a standalone `.mmd` file in `diagrams/`.
 
-### Diagram type conventions
+#### Diagram type conventions
 
 | Content | Mermaid type | Notes |
 |---|---|---|
@@ -273,7 +440,7 @@ Every `diagram:` path referenced in the IR gets a standalone `.mmd` file in `dia
 | Entity relationships | `erDiagram` | Entity map: names only. Schema detail: include fields. |
 | Class/interface relationships | `classDiagram` | For L4 code views |
 
-### C4 classDef palette
+#### C4 classDef palette
 
 ```mermaid
 classDef actor fill:#d9770611,stroke:#d9770644,stroke-width:1.5px
@@ -284,7 +451,7 @@ classDef store fill:#8b5cf611,stroke:#8b5cf644,stroke-width:1.5px
 
 Use `stroke-dasharray: 5 5` for planned/future components.
 
-### Diagram hygiene
+#### Diagram hygiene
 
 - **Naming:** Kebab-case, descriptive. `context.mmd`, `containers.mmd`, `core-engine.mmd`, `entity-map.mmd`, `cli-message-flow.mmd`.
 - **Edge labels (`graph TD` only):** Append `&ensp;` to prevent clipping (Mermaid v11 bug). Do NOT use `&ensp;` in `sequenceDiagram` — `<script type="text/plain">` blocks don't parse HTML entities, so `&ensp;` is sent literally to Mermaid and causes parse errors. The clipping hack is only for `graph TD` edge labels.
@@ -295,7 +462,7 @@ Use `stroke-dasharray: 5 5` for planned/future components.
 
 ---
 
-## Step 4 — Populate refs.json
+### Step 4 — Populate refs.json
 
 Build as you model. Map named concepts to source file paths.
 
@@ -313,7 +480,7 @@ Target 20-50 load-bearing references. Only concepts where a reader would natural
 
 ---
 
-## Step 5 — Write modelling notes
+### Step 5 — Write modelling notes
 
 Every page YAML MUST include a non-empty `modelling_notes` section. This is the diagnostic trail — NOT rendered into the atlas.
 
@@ -324,7 +491,7 @@ Document:
 - Why domains were partitioned a certain way
 - Any close-call structural judgments
 
-**These notes answer "why does the IR look like this?"** When Skill 2 produces wrong output, modelling notes help isolate whether the IR was wrong (Skill 1 fault) or the rendering was wrong (Skill 2 fault).
+**These notes answer "why does the IR look like this?"** When `atlas-ir-visual-translation` produces wrong output, modelling notes help isolate whether the IR was wrong or the rendering was wrong.
 
 ---
 
@@ -344,9 +511,18 @@ If the IR is so loose that projects are structurally incoherent → IR has under
 
 ## Pitfalls
 
+### Source ingest
+- **Don't serialise parallel reads.** The cold start pass touches dozens of files — batch them. This is the single biggest efficiency win.
+- **Don't read every file.** The goal is structural understanding, not line-by-line familiarity. Read entry points, schemas, configs, and READMEs. Skim directory structure. Skip test files, generated code, vendored dependencies.
+- **Don't produce an intermediate artifact.** Phase 1 loads context for phase 2 in the same window. If you find yourself writing a "discovery report" to disk, stop.
+- **Don't re-derive what the IR already knows (delta/PR modes).** Read the IR first. It's the baseline. Only analyse what changed.
+- **Don't treat every code change as architecturally significant (PR mode).** Most changes are IR-invisible. The skill's value in PR mode is triage — quickly identifying whether the architecture is affected.
+- **Don't guess the mode.** If it's unclear whether IR exists or what state it's in, check the filesystem. If it's ambiguous whether this is a general update or PR review, ask.
+
+### IR production
 - **Don't include rendering hints in the IR.** No "render as card", no "use 3-column grid", no colour preferences. Domain language only. If you're typing a CSS class name or HTML element, stop.
 - **Don't duplicate content across pages.** Dynamic views (C4 page) and sequences (sequences page) serve different purposes. If the system only warrants one treatment, choose one home and skip the other.
-- **Enforce concept ownership.** Each concept should have ONE primary home across all pages. Other pages reference it with a one-line description and a cross-reference, not a full re-description at equal depth. Skills described fully on the diataxis page should be a brief reference on the data-model page, not described again at similar length. Track this mentally: "which page OWNS this concept?"
+- **Enforce concept ownership.** Each concept should have ONE primary home across all pages. Other pages reference it with a one-line description and a cross-reference, not a full re-description at equal depth. Track this mentally: "which page OWNS this concept?"
 - **Don't model everything.** The IR captures what's architecturally significant, not a comprehensive dump. Every section has a "when to skip" — use it.
 - **Don't skip modelling notes.** They're the diagnostic seam between understanding and rendering.
 - **Don't invent IR vocabulary.** If a concept isn't in the reference IR for its page type, it doesn't belong or the reference IR needs extending (deliberately, not ad-hoc).
@@ -356,6 +532,9 @@ If the IR is so loose that projects are structurally incoherent → IR has under
 - **Don't over-decompose.** L3 is selective. L4 is almost never. The atlas is for orientation, not code-level detail. IDEs do L4 better.
 - **Don't forget cross-page name consistency.** If the C4 page calls it "Core Engine", every other page must use the same name. Build a glossary mentally and stick to it.
 - **Don't use `<br/>` or `&ensp;` in sequence diagrams.** `<br/>` and `&ensp;` are valid in `graph TD` node/edge labels but cause parse errors in `sequenceDiagram`. Sequence diagram labels are plain text — no HTML. This broke all 5 sequence diagrams in the first test.
+
+### Pipeline discipline
+- **Don't stop to ask mid-pipeline.** The only user checkpoint is the invocation confirmation at the start. After that, the pipeline runs autonomously: ingest → model → render. Structural judgments go in `modelling_notes`, not in messages asking "agree?"
 
 ---
 
@@ -370,4 +549,4 @@ Before declaring the IR complete:
 - [ ] **Refs coverage:** `refs.json` exists with 20-50 load-bearing references.
 - [ ] **Atlas manifest:** `atlas.yaml` lists exactly the pages that exist in `pages/`.
 - [ ] **No rendering hints:** Grep for CSS, HTML, colour, grid, card — zero hits in IR YAML.
-- [ ] **Proceed to Skill 2:** IR is complete — pass control to `atlas-ir-visual-translation` in the same context window.
+- [ ] **Proceed to visual translation:** IR is complete — pass control to `atlas-ir-visual-translation` in the same context window.
