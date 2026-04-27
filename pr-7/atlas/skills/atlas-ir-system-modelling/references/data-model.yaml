@@ -1,0 +1,252 @@
+# Atlas IR Reference — Data Model Page
+#
+# This is the exhaustive reference for what a data-model page can express.
+# Nothing should be produced that doesn't align with this template.
+#
+# The vocabulary is data modelling's own — entities, domains, cardinality,
+# persistence layers, wire formats. Not HTML, not CSS.
+#
+# The zoom principle mirrors C4 but applied to data:
+#   Entity Map    → the big picture (what persists, how things connect)
+#   Domain View   → partitioned by bounded context (one diagram per domain)
+#   Schema Detail → full field-level detail for one domain
+#
+# The modeller decides how deep to go. Not every domain needs schema detail.
+# Not every system needs domain partitioning (small systems may only need
+# the entity map).
+
+page:
+  type: data-model
+  subject: ""                         # the software system whose data is being modelled
+
+# ─────────────────────────────────────────────
+# ENTITY MAP (always present)
+# ─────────────────────────────────────────────
+# The big picture. What persists, how entities relate.
+# Equivalent to C4's system context — orientation, not detail.
+#
+# Shows ONLY: entity names, primary/foreign key relationships, cardinality.
+# Does NOT show: field names, data types, constraints, indexes.
+#
+# The purpose is: "in 30 seconds, understand what data the system manages
+# and how it's connected."
+#
+# MODELLING DECISIONS:
+# - What counts as an entity? Things that persist and have identity.
+#   Not every table — skip join tables, audit logs, migration tracking.
+#   Show the entities a human would name when describing the domain.
+# - What relationships to show? The structural ones — ownership, containment,
+#   association. Skip implementation-level FK indirection.
+# - Persistence layer: state it per entity so the reader knows where data lives
+#   (might be split across SQLite, S3, Redis, etc.)
+
+entity_map:
+  description: ""                     # one-sentence framing — what this system stores and why
+  entities:
+    - name: ""
+      persistence: ""                 # sqlite | postgres | mysql | redis | s3 | file | in-memory | etc
+      description: ""                 # what this entity represents in the domain, one sentence
+  relationships:
+    - source: ""
+      target: ""
+      cardinality: ""                 # one-to-one | one-to-many | many-to-many
+      label: ""                       # the nature of the relationship — "contains", "belongs to",
+                                      # "pays for", "triggers" — domain language, not FK names
+      optional: false                 # can the source exist without the target?
+  diagram: ""                         # path to .mmd — erDiagram showing entity names + relationships only
+
+# ─────────────────────────────────────────────
+# DOMAINS (optional — for systems with >~8 entities)
+# ─────────────────────────────────────────────
+# Partition entities into bounded contexts. Each domain is a coherent cluster
+# of entities that belong together — billing, identity, inventory, messaging, etc.
+#
+# Equivalent to C4's container diagram — zooming in, but still showing shape
+# not detail.
+#
+# Each domain gets its own diagram showing:
+# - Entities within the domain (names + PK/FK relationships)
+# - Cross-domain references as simplified external nodes
+#   ("→ User [Identity Domain]" rather than the full User entity)
+#
+# MODELLING DECISIONS:
+# - How to partition? By business capability / bounded context, not by
+#   database schema or table prefix. Ask: "what would a team own?"
+# - How many domains? 2-6 is typical. If you have 1, skip this section.
+#   If you have 10+, some should be merged or the system is actually
+#   multiple systems.
+# - Cross-domain references: show them as stubs, not full entities.
+#   The reader follows the link to the other domain's detail if curious.
+# - Some entities genuinely span domains (User, Config). Assign them to
+#   their primary domain and reference from others.
+
+domains:
+  - name: ""                          # e.g. "Identity", "Messaging", "Tool Execution", "Billing"
+    description: ""                   # what this domain is responsible for
+    entities: []                      # names of entities in this domain (must exist in entity_map)
+    external_refs:                    # entities from OTHER domains that this domain references
+      - entity: ""                    # name of the entity
+        domain: ""                    # which domain it belongs to
+        relationship: ""              # how this domain uses it — "authenticates via", "bills against"
+    diagram: ""                       # path to .mmd — erDiagram for this domain only
+
+# ─────────────────────────────────────────────
+# SCHEMA DETAIL (optional — per domain or per entity cluster)
+# ─────────────────────────────────────────────
+# Full zoom. All fields, data types, constraints for one domain at a time.
+#
+# Equivalent to C4's component diagram — only for domains worth the detail.
+#
+# MODELLING DECISIONS:
+# - Which domains warrant schema detail? Only those where:
+#   (a) The field structure is architecturally significant (not just
+#       "id, name, created_at" for everything)
+#   (b) Understanding the schema helps a reader reason about system behaviour
+#       (e.g., a message table with role enum, content, tool_calls JSON —
+#       the shape of this data IS the architecture)
+#   (c) Wire format consumers need to understand the contract
+# - How much to show? Every field, but annotate the architecturally significant
+#   ones — primary keys, foreign keys, enums, computed fields, JSON blobs.
+#   Don't explain obvious fields ("id is the primary key" adds nothing).
+# - Constraints: only the ones that encode business rules (NOT NULL on
+#   required fields, UNIQUE on natural keys, CHECK on enums). Skip indexes
+#   and implementation-level constraints.
+
+schema_detail:
+  - domain: ""                        # which domain or entity cluster this details
+                                      # (matches a name from domains above, or "all" if no domains)
+    entities:
+      - name: ""
+        fields:
+          - name: ""
+            type: ""                  # the data type — varchar, integer, json, timestamp, uuid, boolean, enum, text, blob
+            role: ""                  # what this field does architecturally:
+                                      #   primary-key | foreign-key | natural-key | enum | computed |
+                                      #   json-blob | polymorphic-type | version | timestamp | config
+            constraints: []           # business-rule constraints only: not-null, unique, default, check
+            description: ""           # optional — only when the field name isn't self-explanatory
+                                      # or the field encodes something non-obvious
+            enum_values: []           # when role is enum — the possible values
+        relationships:                # FK relationships with full detail
+          - target: ""
+            cardinality: ""
+            foreign_key: ""           # the FK field name
+            on_delete: ""             # cascade | set-null | restrict | no-action (optional, when significant)
+    diagram: ""                       # path to .mmd — full erDiagram with fields and types
+
+# ─────────────────────────────────────────────
+# WIRE FORMATS (optional)
+# ─────────────────────────────────────────────
+# Data shapes that cross container boundaries. API payloads, message formats,
+# event schemas, webhook bodies. The contracts between containers.
+#
+# These are NOT database entities — they're the data in flight.
+# A wire format might map closely to an entity (GET /user returns a User-shaped
+# JSON) or might be a completely different shape (a tool call request is
+# assembled from multiple entities).
+#
+# MODELLING DECISIONS:
+# - Which wire formats matter? The ones that define the contract between
+#   containers. Internal function call arguments don't count.
+# - How to represent? Name, format, description, and either an example
+#   payload or a field listing. The modeller picks whichever communicates better.
+# - Versioning: note if the format is versioned or has backward-compatibility
+#   constraints.
+
+wire_formats:
+  - name: ""                          # e.g. "Tool Call Schema", "LLM Message Payload", "Webhook Event"
+    format: ""                        # json | protobuf | xml | yaml | msgpack | avro | etc
+    direction: ""                     # inbound | outbound | bidirectional
+    description: ""                   # what this format carries and between which containers
+    producers: []                     # which containers emit this format
+    consumers: []                     # which containers receive this format
+    fields:                           # optional — key fields if showing structure
+      - name: ""
+        type: ""
+        description: ""
+        required: true
+    example: ""                       # optional — a representative payload (inline YAML/JSON string)
+                                      # use when the shape is non-obvious and an example communicates
+                                      # faster than a field listing
+    versioned: false                  # is this format explicitly versioned?
+    version: ""                       # current version if versioned
+
+# ─────────────────────────────────────────────
+# CONFIG STRUCTURES (optional)
+# ─────────────────────────────────────────────
+# Configuration that affects system behaviour. Not every config file —
+# the ones that a reader needs to understand to reason about the architecture.
+#
+# Examples: config hierarchy (user overrides project overrides global),
+# plugin manifests, feature flags, environment-variable-driven behaviour.
+#
+# MODELLING DECISIONS:
+# - Include when the config structure IS the architecture — when understanding
+#   "how does this get configured?" is necessary for orientation.
+# - Skip when config is straightforward (a single .env file with obvious keys).
+# - Show hierarchy/override order when it exists — this is often the
+#   architecturally significant part.
+
+config:
+  - name: ""                          # e.g. "Agent Configuration", "Plugin Manifest", "Feature Flags"
+    format: ""                        # yaml | json | toml | env | ini | etc
+    description: ""                   # what this config controls
+    hierarchy: ""                     # optional — override order if applicable
+                                      # e.g. "env vars > user config > project config > defaults"
+    key_fields:                       # only architecturally significant fields
+      - name: ""
+        type: ""
+        description: ""
+        default: ""                   # optional
+
+# ─────────────────────────────────────────────
+# STORAGE TOPOLOGY (optional)
+# ─────────────────────────────────────────────
+# How and where data physically lives. Relevant when data spans multiple
+# storage technologies or when the storage architecture is itself interesting
+# (replication, sharding, caching layers, sync between stores).
+#
+# This is the data equivalent of C4's deployment diagram — the physical
+# reality behind the logical model.
+#
+# Skip for simple systems (one database, no caching, no replication).
+
+storage_topology:
+  stores:
+    - name: ""                        # e.g. "Primary SQLite", "Redis Cache", "S3 Archive"
+      technology: ""
+      role: ""                        # primary | cache | archive | search-index | replica | sync-target
+      description: ""
+      hosts_entities: []              # which entities from the entity map live here
+  sync:                               # data movement between stores
+    - source: ""
+      target: ""
+      mechanism: ""                   # replication | ETL | event-driven | manual | cron
+      description: ""
+  diagram: ""                         # optional — path to .mmd showing storage topology
+
+# ─────────────────────────────────────────────
+# REFS
+# ─────────────────────────────────────────────
+
+refs:
+  "": { path: "", symbol: "" }
+
+# ─────────────────────────────────────────────
+# MODELLING NOTES
+# ─────────────────────────────────────────────
+# The agent's reasoning about data modelling decisions. Not rendered.
+#
+# Examples:
+# - "Skipped audit_log and migration_version tables from entity map —
+#    infrastructure, not domain entities"
+# - "Partitioned into 3 domains: Conversation, Tools, Identity. Skills
+#    could be their own domain but only have 2 entities — merged into Tools"
+# - "Showed schema detail for Conversation domain because the message
+#    format (role enum, tool_calls JSON blob) is architecturally significant"
+# - "Omitted storage topology — everything is in one SQLite file"
+# - "Wire format for tool calls is the most important contract in the
+#    system — included full example payload"
+
+modelling_notes:
+  - ""
