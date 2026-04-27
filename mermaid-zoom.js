@@ -55,41 +55,67 @@ mermaid.initialize({
   startOnLoad: false,
   theme: 'base',
   look: 'classic',
-  themeVariables: {
+  themeVariables: themeVars(isDark)
+});
+
+function themeVars(dark) {
+  return {
+    darkMode: dark,
     fontFamily: "'DM Sans', system-ui, sans-serif",
     fontSize: '15px',
     /* Primary (sky/blueprint blue) */
-    primaryColor: isDark ? '#1e3a5f' : '#dbeafe',
-    primaryBorderColor: isDark ? '#38bdf8' : '#0284c7',
-    primaryTextColor: isDark ? '#e2e8f0' : '#0f172a',
+    primaryColor: dark ? '#1e3a5f' : '#dbeafe',
+    primaryBorderColor: dark ? '#38bdf8' : '#0284c7',
+    primaryTextColor: dark ? '#e2e8f0' : '#0f172a',
     /* Secondary (teal) */
-    secondaryColor: isDark ? '#1a3332' : '#ccfbf1',
-    secondaryBorderColor: isDark ? '#2dd4bf' : '#0d9488',
-    secondaryTextColor: isDark ? '#e2e8f0' : '#0f172a',
+    secondaryColor: dark ? '#1a3332' : '#ccfbf1',
+    secondaryBorderColor: dark ? '#2dd4bf' : '#0d9488',
+    secondaryTextColor: dark ? '#e2e8f0' : '#0f172a',
     /* Tertiary (amber) */
-    tertiaryColor: isDark ? '#2e2618' : '#fef3c7',
-    tertiaryBorderColor: isDark ? '#fbbf24' : '#d97706',
-    tertiaryTextColor: isDark ? '#e2e8f0' : '#0f172a',
-    lineColor: isDark ? '#64748b' : '#94a3b8',
-    noteBkgColor: isDark ? '#1e293b' : '#fefce8',
-    noteTextColor: isDark ? '#e2e8f0' : '#0f172a',
-    noteBorderColor: isDark ? '#fbbf24' : '#d97706',
+    tertiaryColor: dark ? '#2e2618' : '#fef3c7',
+    tertiaryBorderColor: dark ? '#fbbf24' : '#d97706',
+    tertiaryTextColor: dark ? '#e2e8f0' : '#0f172a',
+    lineColor: dark ? '#64748b' : '#94a3b8',
+    noteBkgColor: dark ? '#1e293b' : '#fefce8',
+    noteTextColor: dark ? '#e2e8f0' : '#0f172a',
+    noteBorderColor: dark ? '#fbbf24' : '#d97706',
     /* Sequence-diagram-specific (no-op for other diagram kinds) */
-    actorBkg: isDark ? '#1a3332' : '#ccfbf1',
-    actorBorder: isDark ? '#2dd4bf' : '#0d9488',
-    actorTextColor: isDark ? '#e2e8f0' : '#0f172a',
-    actorLineColor: isDark ? '#475569' : '#94a3b8',
-    activationBkgColor: isDark ? '#1e2a40' : '#e0f2fe',
-    activationBorderColor: isDark ? '#38bdf8' : '#0284c7',
-    signalColor: isDark ? '#94a3b8' : '#475569',
-    signalTextColor: isDark ? '#e2e8f0' : '#0f172a',
-    labelBoxBkgColor: isDark ? '#151d2e' : '#f1f5f9',
-    labelBoxBorderColor: isDark ? '#475569' : '#94a3b8',
-    labelTextColor: isDark ? '#e2e8f0' : '#0f172a',
-    loopTextColor: isDark ? '#94a3b8' : '#64748b',
-    sequenceNumberColor: isDark ? '#0c1222' : '#ffffff',
+    actorBkg: dark ? '#1a3332' : '#ccfbf1',
+    actorBorder: dark ? '#2dd4bf' : '#0d9488',
+    actorTextColor: dark ? '#e2e8f0' : '#0f172a',
+    actorLineColor: dark ? '#475569' : '#94a3b8',
+    activationBkgColor: dark ? '#1e2a40' : '#e0f2fe',
+    activationBorderColor: dark ? '#38bdf8' : '#0284c7',
+    signalColor: dark ? '#94a3b8' : '#475569',
+    signalTextColor: dark ? '#e2e8f0' : '#0f172a',
+    labelBoxBkgColor: dark ? '#151d2e' : '#f1f5f9',
+    labelBoxBorderColor: dark ? '#475569' : '#94a3b8',
+    labelTextColor: dark ? '#e2e8f0' : '#0f172a',
+    loopTextColor: dark ? '#94a3b8' : '#64748b',
+    sequenceNumberColor: dark ? '#0c1222' : '#ffffff',
+  };
+}
+
+/* Theme-aware rect color mapping for sequence diagrams.
+   Dark-mode sources use dark rect backgrounds; swap to lighter
+   versions in light mode so text remains readable. */
+const rectColorMap = {
+  dark: {
+    'rgb(60, 20, 20)':  'rgb(60, 20, 20)',   // red – keep dark
+    'rgb(20, 60, 80)':  'rgb(20, 60, 80)',    // teal – keep dark
+  },
+  light: {
+    'rgb(60, 20, 20)':  'rgb(254, 226, 226)', // red → light rose
+    'rgb(20, 60, 80)':  'rgb(224, 242, 254)', // teal → light sky
   }
-});
+};
+function swapRectColors(code, dark) {
+  const map = dark ? rectColorMap.dark : rectColorMap.light;
+  for (const [from, to] of Object.entries(map)) {
+    code = code.split(from).join(to);
+  }
+  return code;
+}
 
 function initDiagram(shell) {
   const wrap = shell.querySelector('.mermaid-wrap');
@@ -304,11 +330,14 @@ function initDiagram(shell) {
 
   async function render() {
     try {
-      const code = source.textContent.trim();
+      let code = source.textContent.trim();
       if (!code) {
         label.textContent = 'Error: Empty source';
         return;
       }
+
+      /* Swap hardcoded rect colors for the current theme */
+      code = swapRectColors(code, isDark);
 
       const id = 'diagram-' + Date.now() + '-' + Math.random().toString(36).slice(2, 8);
       const { svg } = await mermaid.render(id, code);
@@ -453,19 +482,7 @@ window.__reRenderDiagrams = function () {
   mermaid.initialize({
     startOnLoad: false,
     theme: 'base',
-    fontFamily: "'DM Sans', system-ui, sans-serif",
-    themeVariables: {
-      primaryColor: isDark ? '#1e3a5f' : '#dbeafe',
-      primaryBorderColor: isDark ? '#38bdf8' : '#0284c7',
-      primaryTextColor: isDark ? '#e2e8f0' : '#0f172a',
-      secondaryColor: isDark ? '#1a3332' : '#ccfbf1',
-      secondaryBorderColor: isDark ? '#2dd4bf' : '#0d9488',
-      secondaryTextColor: isDark ? '#e2e8f0' : '#0f172a',
-      tertiaryColor: isDark ? '#2e2618' : '#fef3c7',
-      tertiaryBorderColor: isDark ? '#fbbf24' : '#d97706',
-      tertiaryTextColor: isDark ? '#e2e8f0' : '#0f172a',
-      lineColor: isDark ? '#64748b' : '#94a3b8',
-    }
+    themeVariables: themeVars(isDark)
   });
   document.querySelectorAll('.diagram-shell').forEach(function (shell) {
     const renderFn = shell.__render;
