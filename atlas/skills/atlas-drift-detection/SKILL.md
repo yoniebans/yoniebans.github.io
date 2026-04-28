@@ -1,7 +1,7 @@
 ---
 name: atlas-drift-detection
 description: "Detect architectural drift between a project's codebase and its atlas. Two-stage: cheap structural scan (git diff → coarse buckets) gates an agent evaluation that decides which atlas pages are stale. Designed to run as a daily cron job via the active-projects-daemon."
-maturity: "production — 2 cron runs (April 20-21, 2026). PR #2: TUI+Web Dashboard containers. PR #3: TUI sequence flow + plugin system data model. Both on hermes-architecture."
+maturity: "production — 4 cron runs (April 20-26, 2026). PR #2: TUI+Web Dashboard containers. PR #3: TUI sequence flow + plugin system data model. PR #5: WebSocket transport (dashboard↔TUI gateway). Run 4: no new drift, baseline advanced. All on hermes-architecture."
 ---
 
 # Atlas drift detection
@@ -271,6 +271,8 @@ Send a short summary + PR link. Keep Telegram messages to 2-3 lines max.
 - **Switch atlas repo back to main after run.** Always `git checkout main` at the end so the next daemon run starts from a clean state and can pull. Leaving the repo on a drift branch causes the next run's `git pull` to fail.
 - **Pull the atlas repo before reading pages.** The atlas repo may have merged prior drift PRs since the last run. If you read the atlas pages before pulling, you'll detect drift that was already fixed in a merged PR, waste a full subagent round, and then have to re-read. Always `git pull` the atlas repo in Step 2.
 - **Validate HTML balance after edits.** After updating atlas HTML, count `<div>` opens vs closes to catch unclosed tags. Use `execute_code` to count: `content.count('<div')` vs `content.count('</div')`. Also count `diagram-source` occurrences to confirm the expected number of Mermaid diagrams.
+- **daemon.yaml corruption from read_file dedup cache.** The Hermes `read_file` tool has a deduplication cache that can corrupt small config files — it replaces file contents with a "File unchanged since last read" placeholder message. If `daemon.yaml` contains this string instead of YAML, reconstruct it from `session_search` (search for "daemon.yaml baseline_ref") which has the last known config values. Always use `cat` via terminal to read daemon.yaml, not `read_file`, to avoid triggering the dedup cache.
+- **Incremental check when an open drift PR exists.** When step 5a finds an open PR, don't just stack changes — first determine what the PR already analyzed (read the PR body for its baseline range and commit count). Run the structural scan only on commits *after* the PR's analysis point. If no new structural changes exist beyond the PR, advance baseline_ref and stop — don't duplicate work. The PR body's "Baseline: X → HEAD (N commits)" line tells you the analysis window.
 
 ---
 
