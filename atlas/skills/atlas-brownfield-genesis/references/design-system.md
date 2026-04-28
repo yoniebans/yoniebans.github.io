@@ -306,7 +306,7 @@ File/directory structure display.
 </div>
 ```
 
-**When to use:** Showing repository layout, config file structure, or nested data shapes. Use `<pre>` whitespace — tree connectors must be vertically aligned.
+**When to use:** Showing repository layout, config file structure, or nested data shapes. The CSS handles connector lines via `::before`/`::after` pseudo-elements on `<li>` elements.
 
 ### Config layers — `.config-layers`
 
