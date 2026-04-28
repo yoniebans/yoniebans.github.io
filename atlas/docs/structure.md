@@ -40,7 +40,7 @@ The design system assets come via the `base/` submodule. HTML pages reference th
 
 ## Design system
 
-The atlas uses a shared design system that gives every project's atlas a consistent look and feel. Assets are carried in the atlas directory, not linked from a CDN.
+The atlas uses a shared design system that gives every project's atlas a consistent look and feel. Assets are delivered via a `base/` git submodule, not linked from a CDN.
 
 ### Shared assets (via `base/` submodule)
 
@@ -49,7 +49,7 @@ The atlas uses a shared design system that gives every project's atlas a consist
 - **`scrollspy.js`** — highlights the active section in the sidebar TOC as the user scrolls.
 - **`enhancer.js`** — reads `window.ATLAS_REFS` (set by `refs.js`), wraps `<code data-ref="slug">` chips in GitHub links with external-link icons.
 
-### refs.json (concept → repo mapping)
+### refs.js (concept → repo mapping)
 
 Machine-readable file mapping abstract concepts to source paths:
 
@@ -70,12 +70,12 @@ Links resolve to file-level on GitHub (e.g. `github.com/.../blob/main/src/compon
 
 Every HTML page follows this structure:
 
-1. `<head>` — Google Fonts preconnect, `<link>` to `styles.css`, `<script src>` for Mermaid UMD
+1. `<head>` — Google Fonts preconnect, `<link>` to `base/styles.css`, `<script src>` for Mermaid UMD
 2. `<body>` — `.wrap` > `.toc` (sticky sidebar) + `.main` (content)
 3. Content sections — each has a semantic `id`, a `.sec-head` label, and an `<h2>` title
 4. Diagrams — wrapped in `.diagram-shell` > `.mermaid-wrap` > `.mermaid-viewport` > `.mermaid-canvas`, with source in `<script type="text/plain" class="diagram-source">`
 5. Companion-page footer — `.companion-grid` with `.companion-link` cards (title + description) linking to the other atlas pages
-6. Tail scripts — `mermaid-zoom.js` (defer), `scrollspy.js`, `enhancer.js`
+6. Tail scripts — `base/mermaid-zoom.js` (defer), `base/scrollspy.js`, `base/enhancer.js`
 
 ### Mermaid conventions
 
@@ -93,4 +93,4 @@ All atlas pages reference these via `base/` paths (e.g. `base/styles.css`). The 
 
 ## Reference example
 
-`/mnt/hermes/source/hermes-architecture/` — the atlas of hermes-agent. 4 pages, full design system. This is the canonical in-context learning source for the agent when producing new atlases.
+[hermes-architecture](https://github.com/yoniebans/hermes-architecture) — the atlas of hermes-agent. 4 pages, full design system. This is the canonical in-context learning source for the agent when producing new atlases.
