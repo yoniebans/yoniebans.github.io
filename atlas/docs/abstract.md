@@ -1,6 +1,6 @@
 An **atlas** is the shared abstract layer between human and machine understanding of a project. Not docs, not a README — the mental model itself, materialized as an interactive HTML site that both the human and the agent produce, read, and share.
 
-Every project (greenfield or brownfield) gets one. How it comes into being differs by mode; what it *is* does not. See operational-modes/abstract for when each mode produces it.
+Every project (greenfield or brownfield) gets one. How it comes into being differs by mode; what it *is* does not. See [lifecycle](lifecycle.md) for when each mode produces it.
 
 Written April 18, 2026. Revised April 20, 2026 (HTML-first rewrite). See also: [structure](structure.md), [discipline](discipline.md), [lifecycle](lifecycle.md).
 
@@ -60,4 +60,4 @@ Same files serve both. No separate "agent version" and "human version." The HTML
 
 There is no intermediate format (markdown → build → HTML). The agent produces HTML directly, using the design system assets and the reference example as in-context learning. This keeps the authoring loop tight: the agent writes, the user reviews in their browser, the agent patches.
 
-Reference example: hermes-architecture (`/mnt/hermes/source/hermes-architecture/`) — the atlas of hermes-agent. First one ever produced, canonical reference for all future atlases.
+Reference example: [hermes-architecture](https://github.com/yoniebans/hermes-architecture) — the atlas of hermes-agent. First one ever produced, canonical reference for all future atlases.
