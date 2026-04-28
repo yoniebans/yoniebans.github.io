@@ -157,7 +157,7 @@ window.ATLAS_REFS = {
 
 Follow `references/design-system.md` for the full component catalogue, decision framework, and anti-patterns. Key rules:
 
-- **Page skeleton, section anatomy, and companion footer** are mandatory patterns — follow them exactly as documented in the reference.
+- **Page skeleton and section anatomy** are mandatory patterns — follow them exactly as documented in the reference.
 - **Use the decision framework table** to choose the right component for each piece of content. Default to `.ve-card` when unsure.
 - **Check the anti-patterns section** after writing each page. Common failures: wall-of-text paragraphs, orphaned diagrams, uniform cards with no hierarchy, re-explaining concepts across pages.
 - **Run the quality checks** before moving to the next page.
@@ -244,9 +244,8 @@ Before declaring done:
 2. Can the user traverse the whole atlas in ~10 minutes? (If not, fewer pages or less content.)
 3. Does each page pass the discipline rules? (No decisions, no gotchas, paragraphs ≤3 lines.)
 4. Do diagrams render on `file://`? (If not, check the script loading — classic, not module.)
-5. Do companion-page links work? (Each page links to the others.)
-6. Do `data-ref` code chips link to the correct GitHub paths?
-7. Does the coherence review surface any issues the human should address?
+5. Do `data-ref` code chips link to the correct GitHub paths?
+6. Does the coherence review surface any issues the human should address?
 
 ---
 
