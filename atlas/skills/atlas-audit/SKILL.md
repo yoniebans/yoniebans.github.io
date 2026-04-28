@@ -1,7 +1,7 @@
 ---
 name: atlas-audit
 description: "Audit an existing atlas by working in reverse: HTML → codebase verification. Per-page analysis followed by cross-page coherence review. Produces a report for human review — no automated fixes."
-maturity: "v0.1, April 2026. Untested."
+maturity: "v0.4, April 2026. Tested against hermes-architecture (4 pages, hermes-agent codebase). 14 findings actioned across 14 commits. Skill hardened from test run learnings."
 tags: [atlas, audit, quality, review]
 related_skills: [brownfield-atlas-genesis, atlas-drift-detection]
 ---
@@ -12,7 +12,7 @@ related_skills: [brownfield-atlas-genesis, atlas-drift-detection]
 
 **Direction:** This skill works in *reverse* from brownfield-atlas-genesis. Genesis goes codebase → HTML. This skill goes HTML → codebase verification.
 
-**Output:** A report at `<atlas-dir>/atlas-audit/<project>/YYYYMMDD.md` for the user to read. No PRs, no automated fixes. The report informs human judgment about what to update.
+**Output:** A report at `<atlas-dir>/audit/<project>/YYYYMMDD.md` for the user to read. No PRs, no automated fixes. The report informs human judgment about what to update.
 
 ---
 
@@ -100,9 +100,12 @@ For each page, produce a structured finding set:
 
 **Structural quality**
 - Discipline violations: paragraphs > 3 lines, content that belongs in `CONTEXT.md` or `decisions/`, prose that doesn't support a diagram
+- Diagram type fitness: is the diagram type appropriate for the content? An `erDiagram` implies relational database entities — using it for filesystem configs, runtime singletons, or Python dicts is misleading. Use `graph TD` with subgraphs for heterogeneous storage, `classDiagram` for interfaces, `erDiagram` only for actual database schema.
 - Diagram health: do Mermaid sources parse? Do they reflect reality? Are labels accurate?
-- `data-ref` accuracy: do the refs point to files/paths that still exist?
+- KPI fitness: do the KPI cards help orientation? A number that's technically correct but doesn't tell a reader anything about the system's shape is filler. Flag KPIs that count the wrong thing or that confuse when seen alongside the page content.
+- `data-ref` accuracy: do the refs point to files/paths that still exist? Also flag **sparse coverage** — a page with 30+ code chips and only 3 `data-ref` attributes is under-linked. The load-bearing code references (files, classes, functions) should have refs.
 - Navigation: do companion-page links work? Does the TOC match the sections?
+- **TOC cross-page sync:** the sidebar TOC is duplicated on every page. Check that all copies have the same entries in the same order. Drift between pages (missing entries, different labels) is common after adding new sections to one page.
 
 Rate the page: **accurate / mostly accurate / needs update / significantly stale**.
 
@@ -136,6 +139,7 @@ Overlap should be intentional and navigable. When a concept appears on multiple 
 - Is the **level of detail consistent** across pages, or does one page go much deeper than the others?
 - When concepts appear on multiple pages, do the descriptions **agree**? (Same container described differently on two pages = reader confusion)
 - Are cross-references **bidirectional where needed**? (If page A references page B's concept, does page B acknowledge the relationship?)
+- Is the **page ordering** concrete→abstract? Architecture (structure) → Data Model (entities) → Sequences (behaviour) → Documentation Map (orientation/explanation). If the TOC puts abstract pages before concrete ones, the reader builds a mental model in the wrong order.
 
 ### Overall assessment
 
@@ -147,7 +151,7 @@ Summarise: what's the single biggest problem? What would you fix first?
 
 ## Report format
 
-Write the report to `<atlas-dir>/atlas-audit/<project>/YYYYMMDD.md`:
+Write the report to `<atlas-dir>/audit/<project>/YYYYMMDD.md`:
 
 ```markdown
 # Atlas audit: <project name>
@@ -219,12 +223,24 @@ The action items section is the most important output. Prioritise by impact on t
 
 ---
 
+## Acting on findings
+
+The report produces an action items list. When the user wants to execute fixes:
+
+- **One commit per action item.** The user reviews each fix individually before moving to the next. Don't batch.
+- **Use a git worktree** if the atlas repo already has an active branch for other work. Avoids collisions. `git worktree add -b fix/audit-findings <path> origin/main`.
+- **Start with the smallest structural fix** to establish the pattern (styling, HTML structure), then escalate to larger content additions. This builds review confidence early.
+- **Push to a PR with preview deploys** so the user can check rendering after each commit.
+
+---
+
 ## Pitfalls
 
+- **Don't let the overall assessment bury the findings.** The action items section is the deliverable, not the rating. If you found 3 structural gaps, 4 coherence issues, and 3 stale numbers, saying "mostly trustworthy, fix the numbers" is wrong — the structural gaps are the real problem. The user will call this out.
 - **Don't audit without reading the atlas docs first.** You'll apply generic documentation standards instead of atlas-specific ones. The discipline rules and page type definitions are the evaluation criteria.
 - **Don't skip the essence step.** Jumping straight to "is this accurate?" without first understanding what the page is *trying to do* leads to shallow findings. The essence frames everything.
 - **Don't conflate stale with wrong.** Stale means it was correct at some point. Wrong means it was never correct or is fundamentally misleading. The distinction matters for prioritising fixes.
-- **Don't audit design system / structural HTML.** This skill audits *content* — does the atlas accurately represent the system? Structural HTML issues (wrong CSS classes, broken markup) are a different concern. Note them if you spot them, but don't go looking.
+- **Don't hunt for structural HTML issues, but note violations that affect content.** This skill audits *content*, not markup. Don't go looking for wrong CSS classes. But if you spot design system violations that affect how content renders (e.g. `min-height` on diagram containers forcing oversized boxes, wrong diagram type misrepresenting data), flag them — they're content problems wearing structural clothing.
 - **Don't propose fixes.** The output is a report. Resist the urge to rewrite sections inline. If a finding is clear enough, the fix will be obvious to whoever reads the report.
 - **Read actual code, not just file names.** Verifying a component exists isn't enough — verify the atlas's description of what it *does* and how it *relates* to other components. That's where drift hides.
 - **Cross-page coherence requires all per-page audits first.** Don't try to assess coherence while doing individual pages — you'll miss overlap patterns that only emerge from the full set.
