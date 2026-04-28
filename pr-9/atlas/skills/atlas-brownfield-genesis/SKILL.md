@@ -1,7 +1,7 @@
 ---
 name: brownfield-atlas-genesis
 description: "Reverse-engineer an interactive HTML atlas for an existing project — C4 + UML helicopter-view diagrams rendered as a multi-page site. Per-page authoring with focused codebase reads, coherence review at the end. Use when entering an existing project for the first time, or re-orienting after >1 month away."
-maturity: "stabilizing — 4 runs (April 2026: hermes-agent, trex docs-only, hermes-architecture, data-pipeline). Per-page rewrite April 28 2026."
+maturity: "stabilizing — per-page rewrite April 28 2026."
 ---
 
 # Brownfield atlas genesis
@@ -22,17 +22,6 @@ These docs live in the `yoniebans.github.io` repo at `atlas/docs/`. This skill i
 
 Don't assume. Ask: "Is this brownfield (existing code, atlas needed) or greenfield (new project) or a single task?" The user may have an atlas already, may want a subset, or may be in a different mode entirely.
 
-## Step 0.5 — Pre-work git hygiene (when rebuilding or pivoting)
-
-If the target project had a prior atlas attempt — especially one using a scrapped approach — audit before branching:
-
-1. **Stale branches:** `git branch -a | grep -i atlas` + `gh pr list --state all --search 'atlas'`. Delete merged/abandoned remote+local branches.
-2. **Workspace orphans:** Check `/mnt/hermes/workspace/` for directories from prior attempts (IR YAML output, uncommitted atlas drafts). Nuke anything with zero git history.
-3. **Repo artifacts:** Check for specs, skills, or config on main that describe the old approach. Archive (move to `archive/` subdirs) rather than delete — keeps git history clean.
-4. **Installed skills:** Verify `~/.hermes/skills/` doesn't have stale skills from the old approach still installed.
-
-Confirm the cleanup scope with the user before deleting. This step is skippable for first-time atlas builds with no prior history.
-
 ## Step 1 — Pre-flight reads (mandatory, in order)
 
 ```
@@ -42,14 +31,14 @@ Confirm the cleanup scope with the user before deleting. This step is skippable 
 4. atlas/docs/lifecycle.md      (≤2 min)
 ```
 
-These live in the `yoniebans.github.io` repo at `atlas/docs/`. If running locally, read from `/mnt/hermes/source/yoniebans.github.io/atlas/docs/`.
+These live in the `yoniebans.github.io` repo at `atlas/docs/`. Clone or pull the repo to read them locally.
 
 Do these in parallel reads if the tooling allows. Do NOT start static analysis before this — you'll miss the discipline rules and produce pages that drift into CONTEXT.md / decisions/ territory.
 
 Also read the reference example to load the HTML patterns:
 ```
-5. /mnt/hermes/source/hermes-architecture/index.html      (skim structure, not content)
-6. /mnt/hermes/source/yoniebans.github.io/styles.css      (component vocabulary)
+5. An existing atlas's index.html as exemplar        (skim structure, not content)
+6. The design system's styles.css                     (component vocabulary)
 ```
 
 ## Step 2 — Discovery pass (agent produces, before asking the user anything)
@@ -164,7 +153,7 @@ window.ATLAS_REFS = {
 
 ### HTML authoring guidance
 
-- **Use the reference example as in-context learning.** Read the corresponding page from `/mnt/hermes/source/hermes-architecture/` and follow the same structure: `.wrap` > `.toc` + `.main`, `.sec-head` labels, `.ve-card` cards, `.diagram-shell` wrappers, `.companion-grid` footer.
+- **Use a reference example as in-context learning.** Read the corresponding page from an existing atlas and follow the same structure: `.wrap` > `.toc` + `.main`, `.sec-head` labels, `.ve-card` cards, `.diagram-shell` wrappers, `.companion-grid` footer.
 - **Semantic section IDs.** Every section gets a stable kebab-case `id` (e.g. `#containers`, `#agent-loop`). No opaque IDs.
 - **Mermaid diagrams.** Use `graph TD` with `classDef` for C4 diagrams (NOT the experimental C4 syntax). Use `sequenceDiagram` for flows, `erDiagram` for entities, `classDiagram` for class/interface relationships. For `graph LR` with disconnected subgraphs, add `old ~~~ new` invisible link to force side-by-side layout.
 - **No min-height on diagram containers.** mermaid-zoom.js sizes containers from SVG natural dimensions. Don't set `min-height` in CSS or inline styles on `.mermaid-wrap`.
@@ -282,7 +271,7 @@ After atlas is complete, the user may want to evaluate the architecture — asse
 
 ## Maturity log
 
-- **v0.1 (April 2026):** First execution on `hermes-agent`. Markdown atlas with one-diagram-per-file. Innovation: `.component-inventory.md` re-eval log.
-- **v0.2 (April 2026):** Second execution on `trex` (docs-only variant). Validated docs-only flow.
-- **v0.3 (April 2026):** HTML-first rewrite. Atlas is now an interactive HTML site, not a markdown directory. Agent produces HTML directly using design system reference. Vault notes rewritten to match. Old markdown atlas approach retired.
-- **v0.4 (April 2026):** Per-page rewrite. Batch authoring replaced with per-page loop: focused codebase read per page, awareness of already-built pages, self-verification against declared essence. Agent-produced coherence review added as final quality gate. Step 4 updated to use `base/` git submodule instead of copying files.
+- **v0.1:** Markdown atlas with one-diagram-per-file.
+- **v0.2:** Docs-only variant validated.
+- **v0.3:** HTML-first rewrite. Agent produces HTML directly using design system reference.
+- **v0.4:** Per-page rewrite. Batch authoring replaced with per-page loop: focused codebase read per page, awareness of already-built pages, self-verification against declared essence. Agent-produced coherence review added as final quality gate.
