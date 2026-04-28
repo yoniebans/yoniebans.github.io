@@ -185,7 +185,14 @@ For each page:
 - **Terminology consistency:** Are the same things called the same names across pages?
 
 ### Output
-Write the review to a markdown file in the atlas directory (e.g. `coherence-review.md`). This file is for the human reviewer — it doesn't ship with the atlas. The human reads it, decides what to fix, and directs the agent.
+Write the review to `reviews/YYYY-MM-DD-coherence.md` in the atlas directory. Reviews are the quality paper trail — they don't ship with the atlas but stay in the repo.
+
+**Reviews folder convention:**
+- `reviews/YYYY-MM-DD-coherence.md` — coherence review from atlas build
+- `reviews/YYYY-MM-DD-audit.md` — audit review (from atlas-audit skill)
+- `reviews/YYYY-MM-DD-drift.md` — drift detection output
+
+Date-prefixed, type-suffixed, chronologically stacked.
 
 ## Step 7 — User reviews in browser
 
