@@ -496,6 +496,25 @@ window.ATLAS_REFS = {
 
 ---
 
+## Cross-page deep links
+
+When a section references a concept that has a visual explanation on another atlas page, link to it inline. The reader shouldn't have to remember which page owns which concept.
+
+```html
+<p class="section-desc anim" style="--i:2">
+  Event-driven — each new conversation triggers classification
+  (see <a href="index.html#classification">pipeline phases</a>).
+</p>
+```
+
+**Convention:**
+- Detail pages link up to structure pages where diagrams live — sequences/data-model/diataxis link to architecture sections, not the other way around.
+- Link at the point of reference, not in a separate "see also" block.
+- Plain `<a href="page.html#section-id">` — no special component. The browser's back button handles the return.
+- Don't over-link. Link when the reader would benefit from seeing the diagram. Not every mention of a container needs a link to the architecture page.
+
+---
+
 ## Decision framework
 
 When deciding which component to use for a piece of content:

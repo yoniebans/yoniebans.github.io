@@ -181,6 +181,7 @@ For each page:
 - **Gaps:** Is there anything important in the codebase that no page covers?
 - **Concept ownership:** Is it clear which page "owns" each major concept? If a reader wants to understand X, is there exactly one page they'd go to?
 - **Mental model fluidity:** If someone reads all pages in order, does a coherent mental model build up? Or do the pages feel like four disconnected documents?
+- **Cross-page deep links:** When a detail page references a concept with a visual on another page, is there an inline link? Trace the reading path — where would the reader wish they could jump to the diagram?
 - **Terminology consistency:** Are the same things called the same names across pages?
 
 ### Output
