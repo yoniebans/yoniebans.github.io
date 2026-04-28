@@ -35,11 +35,13 @@ These live in the `yoniebans.github.io` repo at `atlas/docs/`. Clone or pull the
 
 Do these in parallel reads if the tooling allows. Do NOT start static analysis before this — you'll miss the discipline rules and produce pages that drift into CONTEXT.md / decisions/ territory.
 
-Also read the reference example to load the HTML patterns:
+Also read the design system usage guide and an exemplar page:
 ```
-5. An existing atlas's index.html as exemplar        (skim structure, not content)
-6. The design system's styles.css                     (component vocabulary)
+5. references/design-system.md in this skill          (component catalogue, decision framework, anti-patterns)
+6. An existing atlas's index.html as exemplar         (see the components assembled in practice)
 ```
+
+The design system reference is the primary teaching document — it explains which component to use when, how they compose, and what to avoid. The exemplar shows how they come together on a real page. Read the reference first, then skim the exemplar.
 
 ## Step 2 — Discovery pass (agent produces, before asking the user anything)
 
@@ -153,13 +155,12 @@ window.ATLAS_REFS = {
 
 ### HTML authoring guidance
 
-- **Use a reference example as in-context learning.** Read the corresponding page from an existing atlas and follow the same structure: `.wrap` > `.toc` + `.main`, `.sec-head` labels, `.ve-card` cards, `.diagram-shell` wrappers, `.companion-grid` footer.
-- **Semantic section IDs.** Every section gets a stable kebab-case `id` (e.g. `#containers`, `#agent-loop`). No opaque IDs.
-- **Mermaid diagrams.** Use `graph TD` with `classDef` for C4 diagrams (NOT the experimental C4 syntax). Use `sequenceDiagram` for flows, `erDiagram` for entities, `classDiagram` for class/interface relationships. For `graph LR` with disconnected subgraphs, add `old ~~~ new` invisible link to force side-by-side layout.
-- **No min-height on diagram containers.** mermaid-zoom.js sizes containers from SVG natural dimensions. Don't set `min-height` in CSS or inline styles on `.mermaid-wrap`.
-- **Orienting prose.** Metaphors, reading-keys, key-insight callouts, 1-sentence framing paragraphs. No paragraph longer than 3 lines.
-- **Companion-page footer.** Every page links to the other atlas pages via `.companion-grid` with `.companion-link` cards (title + description).
-- **Code chips with `data-ref`.** For every inline `<code>` chip that references a specific file/class/function in the repo, add `data-ref="slug"` matching a key in `refs.js`.
+Follow `references/design-system.md` for the full component catalogue, decision framework, and anti-patterns. Key rules:
+
+- **Page skeleton, section anatomy, and companion footer** are mandatory patterns — follow them exactly as documented in the reference.
+- **Use the decision framework table** to choose the right component for each piece of content. Default to `.ve-card` when unsure.
+- **Check the anti-patterns section** after writing each page. Common failures: wall-of-text paragraphs, orphaned diagrams, uniform cards with no hierarchy, re-explaining concepts across pages.
+- **Run the quality checks** before moving to the next page.
 
 ### Populate refs.js
 
@@ -225,19 +226,12 @@ Per `atlas/docs/discipline.md` — while drafting each page, apply the redirecti
 
 ## Pitfalls
 
-- **Use semi-transparent fills in Mermaid `classDef`, not opaque pastels.** `classDef fill:` colors are baked into the diagram source and don't change on theme toggle. Opaque light pastels (e.g. `fill:#dbeafe`) become invisible in dark mode (light text on light fill). Instead, use 8-digit hex with low alpha: `classDef user fill:#0284c711,stroke:#0284c744,stroke-width:2px`. The transparency lets the background show through, working in both themes. This matches the pattern used on the C4 page (index.html). Do NOT use `color:#0f172a` as a workaround — it forces dark text that breaks in light mode when Mermaid re-renders.
-- **Sequence diagram `rect` backgrounds need light-mode alternatives.** Mermaid `rect rgb(60, 20, 20)` backgrounds are hardcoded in diagram source. Dark backgrounds + dark text (light mode) = unreadable. The design system's `mermaid-zoom.js` includes `swapRectColors()` which maps dark rect colors to lighter alternatives in light mode. If you add new rect colors, register them in the `rectColorMap` object in `mermaid-zoom.js`.
-- **Don't use Mermaid's C4 syntax** (`C4Context`, `C4Container`, `C4Component`). It's experimental, renders poorly in most Mermaid versions (including v11). Use `graph TD` with `classDef` styling. Same information, reliable rendering.
-- **Always set `darkMode` in Mermaid `themeVariables`.** When using `theme: 'base'`, Mermaid derives alternating row fills for ER diagrams from `primaryColor`. Without `darkMode: true`, it lightens the color — producing near-white stripes in dark mode. The design system's `mermaid-zoom.js` sets this via the `themeVars(dark)` helper. If you ever touch the Mermaid config, keep `darkMode` in sync with the theme.
+Most rendering and styling pitfalls are documented in `references/design-system.md` (anti-patterns section). The pitfalls below are process-level:
+
 - **Don't skip the atlas docs reads.** The discipline rules are the whole point. Without them you'll produce a dense-docs site by accident.
 - **Don't ask open-ended interview questions.** Always include your inference. User confirms or corrects.
 - **Don't start writing pages before the user confirms the plan.** Producing 4 HTML pages and then finding out the user wanted a different container split is a large redo.
 - **Don't duplicate existing docs.** If a developer-guide or docs site already covers something at the right level, link to it.
-- **Don't hardcode styles.** Use the shared `styles.css` — don't add inline `<style>` blocks. If you need a component that doesn't exist, add it to the shared sheet.
-- **Don't add min-height to diagram containers.** No inline `style="min-height:..."` on `mermaid-wrap`. No `min-height` in CSS for `.mermaid-wrap` or `.mermaid-viewport`. The `mermaid-zoom.js` sizes the container from the SVG's natural height at 100% zoom. Forced min-heights cause small diagrams to sit in oversized boxes and trigger the zoom engine to blow them up.
-- **Don't use `graph LR` with unlinked subgraphs.** Mermaid stacks subgraphs vertically even in LR mode unless they have a cross-link. Add `subgraphA ~~~ subgraphB` (invisible link) to force side-by-side layout.
-- **Don't use `<script type="module">` for local scripts.** Chrome blocks external ES modules on `file://` due to CORS. Use classic `<script src="..." defer>` for all local JS. The Mermaid UMD build from CDN is loaded via a classic script tag in `<head>`.
-- **Don't use opaque section IDs** (`#s0`, `#s1`). Use semantic kebab-case IDs (`#tool-system`, `#agent-loop`). Other pages link to these.
 - **Don't write CONTEXT.md first.** Atlas before CONTEXT — otherwise CONTEXT picks up structural content that belongs in the atlas.
 
 ---
