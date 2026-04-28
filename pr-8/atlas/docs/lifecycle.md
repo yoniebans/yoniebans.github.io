@@ -58,7 +58,7 @@ When the project has requirement docs, specs, or design documents but no codebas
 - Skip static analysis — there's nothing to inspect
 - The interview becomes the primary work: ingest all documents, synthesize the system shape, then propose the atlas plan with batched questions
 - Mark planned/unreleased features inline (e.g. "(planned)")
-- `deployment.md` can be skipped when no infra info exists
+- `deployment.md` section can be skipped when no infra info exists
 
 ---
 
@@ -67,7 +67,7 @@ When the project has requirement docs, specs, or design documents but no codebas
 The agent produces HTML directly. No markdown intermediate, no build step.
 
 **Inputs the agent uses:**
-1. The atlas vault notes (this file + [structure](structure.md) + [discipline](discipline.md)) — what to produce, rules
+1. The atlas docs (this file + [structure](structure.md) + [discipline](discipline.md)) — what to produce, rules
 2. The design system assets via the `base/` submodule — CSS/JS referenced as `base/styles.css`, etc.
 3. The reference example's HTML pages — in-context learning for structure, voice, component patterns
 4. Static analysis / documents / user interview answers — the actual content
@@ -75,7 +75,7 @@ The agent produces HTML directly. No markdown intermediate, no build step.
 **Process:**
 1. Agent adds a `base/` git submodule pointing at `yoniebans.github.io` (or updates it if it exists)
 2. Agent produces each HTML page, referencing `base/styles.css`, `base/mermaid-zoom.js`, etc.
-3. Agent populates `refs.json` with concept → repo path mappings
+3. Agent populates `refs.js` with concept → repo path mappings
 4. Agent adds `data-ref` attributes to code chips that reference repo concepts
 5. User reviews each page in browser, agent patches based on feedback
 
@@ -109,12 +109,6 @@ An honest snapshot is worth more than a precise but stale one. The goal isn't re
 
 ## Open questions
 
-### Drift detection
-
-Solved — see workflows/drift-daemon. Daily cron job: structural scan (git diff → coarse buckets) gates an agent evaluation that updates stale atlas pages and opens PRs.
-
 ### Multi-repo projects
 
-An atlas for a system that spans 3 repos — does it live in one of them, in a meta-repo, or in `/mnt/hermes/projects/<project>/atlas/` independent of any single repo?
-
-Leaning toward the last option (agent-facing path, not repo-facing). Confirm when the case arises.
+An atlas for a system that spans multiple repos — does it live in one of them, in a meta-repo, or independently? Leaning toward a standalone repo per atlas. Confirm when the case arises.
