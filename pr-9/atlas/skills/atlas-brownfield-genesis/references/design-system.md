@@ -133,7 +133,7 @@ The primary building block. A bordered surface card with a colored left accent.
 
 **Depth variants:**
 - Default — standard surface, subtle hover lift
-- `.ve-card--hero` — accent-tinted background + border. Use for the most important card in a section.
+- `.ve-card--hero` — accent-tinted background + border, 20px bottom margin. Use for the most important card in a section. The bottom margin separates it from whatever follows.
 - `.ve-card--recessed` — subdued background, inset shadow. Use for secondary/supporting content.
 
 **When to use:** Any self-contained piece of information — a container description, a component breakdown, a concept explanation. Cards are the atoms of atlas pages.
