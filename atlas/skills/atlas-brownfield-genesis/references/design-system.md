@@ -43,8 +43,8 @@ Every atlas page follows this exact structure:
   <script src="base/page-nav.js" defer></script>
   <script src="base/scrollspy.js" defer></script>
   <script src="base/presentation.js" defer></script>
-  <script src="base/enhancer.js" defer></script>
   <script src="refs.js" defer></script>
+  <script src="base/enhancer.js" defer></script>
 </body>
 </html>
 ```
@@ -53,7 +53,7 @@ Every atlas page follows this exact structure:
 - Fonts: DM Sans (body) + Fira Code (mono). No others. No Google Fonts experimentation.
 - All JS loaded as classic `<script defer>`, never `<script type="module">` (breaks `file://`).
 - The `base/` prefix comes from the git submodule. Never inline styles from `styles.css`.
-- Script order matters — `mermaid-zoom.js` must come before `scrollspy.js`.
+- Script order matters — `mermaid-zoom.js` must come before `scrollspy.js`. `refs.js` must come before `enhancer.js` (enhancer reads `ATLAS_REFS` on init).
 
 ---
 
@@ -167,8 +167,8 @@ Column layouts for organizing cards side by side.
 **Always pair with `gap-24`.** Grids collapse to single column on mobile automatically.
 
 **When to use:**
-- `.grid-2` — comparing two things (before/after, client/server, preprocessing/postprocessing)
-- `.grid-3` — three peer components at the same level
+- `.grid-2` — comparing two things, or any cards containing schema tables with long field names (3-col grids overflow at ~310px card width)
+- `.grid-3` — three peer components at the same level, but only if card content is compact (short labels, no tables)
 - `.grid-4` — many small items (extension points, config options)
 
 ### Auto-fit card grid — `.card-grid`
