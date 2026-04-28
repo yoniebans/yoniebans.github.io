@@ -12,7 +12,7 @@ related_skills: [brownfield-atlas-genesis, atlas-drift-detection]
 
 **Direction:** This skill works in *reverse* from brownfield-atlas-genesis. Genesis goes codebase → HTML. This skill goes HTML → codebase verification.
 
-**Output:** A report at `<workspace>/atlas-audit-<project>/report.md` for the user to read. No PRs, no automated fixes. The report informs human judgment about what to update.
+**Output:** A report at `<atlas-dir>/atlas-audit/<project>/YYYYMMDD.md` for the user to read. No PRs, no automated fixes. The report informs human judgment about what to update.
 
 ---
 
@@ -147,7 +147,7 @@ Summarise: what's the single biggest problem? What would you fix first?
 
 ## Report format
 
-Write the report to `<workspace>/atlas-audit-<project>/report.md`:
+Write the report to `<atlas-dir>/atlas-audit/<project>/YYYYMMDD.md`:
 
 ```markdown
 # Atlas audit: <project name>
