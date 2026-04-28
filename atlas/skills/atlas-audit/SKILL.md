@@ -206,7 +206,20 @@ Write the report to `<atlas-dir>/audit/<project>/YYYYMMDD.md`:
 **Rating:** trustworthy / mostly trustworthy / needs attention / unreliable
 **Biggest problem:** ...
 **Fix first:** ...
+
+## Action items (priority order)
+
+### Structural gaps — the atlas lies by omission
+1. ...
+
+### Coherence — the atlas confuses
+N. ...
+
+### Staleness — the atlas is wrong on facts
+N. ...
 ```
+
+The action items section is the most important output. Prioritise by impact on the atlas as a mental model — structural gaps first (the atlas doesn't show something real), coherence issues second (the atlas confuses), staleness third (the atlas states wrong facts). Don't bury structural findings under a "just update the numbers" conclusion.
 
 ---
 
