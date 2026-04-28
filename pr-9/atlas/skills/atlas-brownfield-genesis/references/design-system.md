@@ -4,7 +4,7 @@ Read this before authoring any HTML page. This is the component vocabulary, asse
 
 **Ground truth:**
 - `base/styles.css` (via the `base/` git submodule pointing at `yoniebans.github.io`) — the canonical CSS. If this guide and the CSS disagree, the CSS wins and this guide needs updating.
-- An existing atlas (e.g. `hermes-architecture/`) — the exemplar showing these components assembled on real pages. Read it after this guide to see the patterns in context.
+- Any existing atlas built with this design system — an exemplar showing these components assembled on real pages. Read one after this guide to see the patterns in context.
 
 This guide is a pre-digested teaching document — it explains *which* component to use *when* and *how* they compose. The CSS and exemplar are the raw material it's derived from.
 
