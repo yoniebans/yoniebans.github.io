@@ -20,8 +20,8 @@ related_skills: [brownfield-atlas-genesis, atlas-drift-detection]
 
 The skill needs two things:
 
-1. **Atlas directory** — the HTML pages to audit (e.g. `/mnt/hermes/source/hermes-architecture/`)
-2. **Codebase directory** — the source of truth to verify against (e.g. `~/.hermes/hermes-agent/`)
+1. **Atlas directory** — the HTML pages to audit (e.g. `<project>/atlas/` or a standalone atlas repo)
+2. **Codebase directory** — the source of truth to verify against (e.g. the project's source repo root)
 
 Ask the user for both if not obvious from context. Confirm before proceeding.
 
