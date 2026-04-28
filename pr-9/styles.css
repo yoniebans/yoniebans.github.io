@@ -413,6 +413,7 @@ h3 {
   background: color-mix(in srgb, var(--surface) 92%, var(--accent) 8%);
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
   border-color: color-mix(in srgb, var(--border) 50%, var(--accent) 50%);
+  margin-bottom: 20px;
 }
 .ve-card--recessed {
   background: var(--surface2);
