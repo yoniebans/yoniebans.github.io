@@ -21,19 +21,20 @@ A small project might only need system architecture + data model. A large one mi
 
 ```
 <project>/atlas/
-├── styles.css              ← shared design system
-├── mermaid-zoom.js         ← zoom/pan engine for diagrams
-├── scrollspy.js            ← TOC active-section highlighting
-├── enhancer.js             ← refs.js → repo link enrichment
-├── refs.js                 ← concept → repo path mapping (classic script, sets window.ATLAS_REFS)
+├── base/                       ← git submodule → yoniebans.github.io (design system)
+│   ├── styles.css
+│   ├── mermaid-zoom.js
+│   ├── scrollspy.js
+│   └── enhancer.js
+├── refs.js                     ← concept → repo path mapping (classic script, sets window.ATLAS_REFS)
 │
-├── index.html              ← system architecture (always present)
-├── data-model.html         ← data model (when relevant)
-├── sequence-diagrams.html  ← interaction sequences (when relevant)
-└── diataxis.html           ← documentation map (when relevant)
+├── index.html                  ← system architecture (always present)
+├── data-model.html             ← data model (when relevant)
+├── sequence-diagrams.html      ← interaction sequences (when relevant)
+└── diataxis.html               ← documentation map (when relevant)
 ```
 
-The shared assets (CSS/JS) are copied from the reference example. The HTML pages are the authored content.
+The design system assets come via the `base/` submodule. HTML pages reference them as `base/styles.css`, `base/mermaid-zoom.js`, etc.
 
 ---
 
@@ -41,7 +42,7 @@ The shared assets (CSS/JS) are copied from the reference example. The HTML pages
 
 The atlas uses a shared design system that gives every project's atlas a consistent look and feel. Assets are carried in the atlas directory, not linked from a CDN.
 
-### Shared assets (copy from reference)
+### Shared assets (via `base/` submodule)
 
 - **`styles.css`** — blueprint-aesthetic theme. Graph-paper background, DM Sans + Fira Code, 7 named accent colors with dim tints, full dark/light auto-theme. Card vocabulary: `.ve-card`, `.kpi-card`, `.callout`, `.pipeline-step`, `.schema-table`, `.companion-grid`.
 - **`mermaid-zoom.js`** — renders all Mermaid diagram sources on the page. Per-diagram zoom/pan toolbar with smart-fit, 1:1, drag-pan, Ctrl-wheel zoom, "open standalone" action. Classic (non-module) script for file:// compatibility.
@@ -88,7 +89,7 @@ Every HTML page follows this structure:
 
 The shared design system assets (CSS, JS) are canonically hosted at **yoniebans.github.io** (repo: `yoniebans/yoniebans.github.io`). Files at root: `styles.css`, `mermaid-zoom.js`, `scrollspy.js`, `enhancer.js`, `presentation.js`, `presentation.css`.
 
-All atlas pages and posts reference these via absolute paths (`/styles.css`). Per-project atlases (hermes-architecture, trex-atlas, etc.) should migrate to referencing the canonical home rather than carrying their own copies — eliminates style drift across repos.
+All atlas pages reference these via `base/` paths (e.g. `base/styles.css`). The `base/` directory is a git submodule pointing at `yoniebans.github.io`, so all projects share the same design system version and can update it with `git submodule update --remote`.
 
 ## Reference example
 
