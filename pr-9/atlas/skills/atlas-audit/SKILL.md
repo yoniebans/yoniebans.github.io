@@ -12,7 +12,7 @@ related_skills: [brownfield-atlas-genesis, atlas-drift-detection]
 
 **Direction:** This skill works in *reverse* from brownfield-atlas-genesis. Genesis goes codebase → HTML. This skill goes HTML → codebase verification.
 
-**Output:** A report at `<workspace>/atlas-audit-<project>/report.md` for the user to read. No PRs, no automated fixes. The report informs human judgment about what to update.
+**Output:** A report at `<atlas-dir>/atlas-audit/<project>/YYYYMMDD.md` for the user to read. No PRs, no automated fixes. The report informs human judgment about what to update.
 
 ---
 
@@ -20,8 +20,8 @@ related_skills: [brownfield-atlas-genesis, atlas-drift-detection]
 
 The skill needs two things:
 
-1. **Atlas directory** — the HTML pages to audit (e.g. `/mnt/hermes/source/hermes-architecture/`)
-2. **Codebase directory** — the source of truth to verify against (e.g. `~/.hermes/hermes-agent/`)
+1. **Atlas directory** — the HTML pages to audit (e.g. `<project>/atlas/` or a standalone atlas repo)
+2. **Codebase directory** — the source of truth to verify against (e.g. the project's source repo root)
 
 Ask the user for both if not obvious from context. Confirm before proceeding.
 
@@ -147,7 +147,7 @@ Summarise: what's the single biggest problem? What would you fix first?
 
 ## Report format
 
-Write the report to `<workspace>/atlas-audit-<project>/report.md`:
+Write the report to `<atlas-dir>/atlas-audit/<project>/YYYYMMDD.md`:
 
 ```markdown
 # Atlas audit: <project name>
@@ -172,6 +172,9 @@ Write the report to `<workspace>/atlas-audit-<project>/report.md`:
 #### Coverage
 ...
 
+#### Discovery (what the atlas missed)
+...
+
 #### Structural quality
 ...
 
@@ -183,13 +186,17 @@ Write the report to `<workspace>/atlas-audit-<project>/report.md`:
 ### Concept ownership matrix
 | Concept | index.html | data-model.html | sequence-diagrams.html | diataxis.html |
 |---------|-----------|----------------|----------------------|--------------|
-| ...     | owns      | references     | —                    | —            |
+| ...     | owns      | refs (→ index#section) | —              | —            |
 
 ### Gaps
 ...
 
 ### Coherence
-...
+- Story consistency: ...
+- Cross-reference accuracy: ...
+- Description agreement (same concept, multiple pages): ...
+- Bidirectional cross-refs: ...
+- Detail level consistency: ...
 
 ### Overall assessment
 **Rating:** trustworthy / mostly trustworthy / needs attention / unreliable
@@ -201,7 +208,7 @@ Write the report to `<workspace>/atlas-audit-<project>/report.md`:
 
 ## Pitfalls
 
-- **Don't audit without reading the vault notes first.** You'll apply generic documentation standards instead of atlas-specific ones. The discipline rules and page type definitions are the evaluation criteria.
+- **Don't audit without reading the atlas docs first.** You'll apply generic documentation standards instead of atlas-specific ones. The discipline rules and page type definitions are the evaluation criteria.
 - **Don't skip the essence step.** Jumping straight to "is this accurate?" without first understanding what the page is *trying to do* leads to shallow findings. The essence frames everything.
 - **Don't conflate stale with wrong.** Stale means it was correct at some point. Wrong means it was never correct or is fundamentally misleading. The distinction matters for prioritising fixes.
 - **Don't audit design system / structural HTML.** This skill audits *content* — does the atlas accurately represent the system? Structural HTML issues (wrong CSS classes, broken markup) are a different concern. Note them if you spot them, but don't go looking.
