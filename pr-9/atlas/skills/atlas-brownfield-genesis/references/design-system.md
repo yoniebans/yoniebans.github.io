@@ -345,27 +345,6 @@ Expandable sections for secondary content.
 
 **When to use:** Content that a reader might want but shouldn't dominate the page — full file listings, exhaustive config options, deep-dive details that aren't needed on first scan. If you're putting content in a collapsible, ask whether it belongs in the atlas at all.
 
-### Companion page footer — `.companion-grid`
-
-Cross-page navigation at the bottom of every page.
-
-```html
-<section id="companion">
-  <div class="sec-head anim" style="--i:20; color:var(--slate)">
-    <span class="dot" style="background:var(--slate)"></span> COMPANION PAGES
-  </div>
-  <div class="companion-grid anim" style="--i:21">
-    <a class="companion-link" href="data-model.html">
-      <div class="companion-link__title">Data Model</div>
-      <div class="companion-link__desc">Entities, schemas, storage topology.</div>
-    </a>
-    <!-- one link per other atlas page -->
-  </div>
-</section>
-```
-
-**Every page must have this.** Link to all other atlas pages with a title and one-line description.
-
 ### Legend — `.legend`
 
 Diagram color key.
@@ -551,7 +530,7 @@ When deciding which component to use for a piece of content:
 - **Wall of text.** No paragraph longer than 3 lines. If you're writing prose that isn't supporting a diagram, it probably doesn't belong in the atlas.
 - **Flat page.** If a page is just a sequence of diagrams with no cards, KPIs, or structured content around them, it reads as a Mermaid dump. Diagrams need orienting prose and companion cards.
 - **Uniform cards.** If every card in a section looks identical (same color, same structure, same depth), there's no visual hierarchy. Use `.ve-card--hero` for the most important one, vary colors, use different inner content patterns.
-- **Orphaned diagrams.** A diagram without a legend, without companion cards explaining key participants, or without a callout framing what to look for.
+- **Orphaned diagrams.** A diagram without a legend, without cards explaining key participants, or without a callout framing what to look for.
 
 ### Content
 - **Re-explaining across pages.** If the architecture page explains the preprocessing pipeline, the sequences page should reference it, not re-explain it. Each concept has one owning page.
@@ -583,9 +562,8 @@ Before delivering a page:
 2. **Discipline test.** For every paragraph: does this help someone understand the shape, or does it help someone do work? Shape → keep. Work → move elsewhere.
 3. **3-line rule.** No paragraph longer than 3 lines. Read every paragraph and trim.
 4. **Diagram rendering.** Open on `file://`. Do all Mermaid diagrams render? Do zoom controls work? Do dark/light themes both look correct?
-5. **Companion links.** Does the page link to every other atlas page via `.companion-grid`?
-6. **Code refs.** Do `data-ref` chips link to correct repo paths? Does `refs.js` have all the slugs?
-7. **Color variety.** Are sections using different accent colors, or is everything the same color?
-8. **Visual hierarchy.** Is there a clear hero/primary section? Are secondary sections visually subordinate?
-9. **Cross-page consistency.** Does this page use the same terminology as sibling pages? Does the TOC navigation work across pages?
-10. **The honesty test.** Read the page cold and ask: where does it surprise me? Surprises mean the atlas is lying about the codebase.
+5. **Code refs.** Do `data-ref` chips link to correct repo paths? Does `refs.js` have all the slugs?
+6. **Color variety.** Are sections using different accent colors, or is everything the same color?
+7. **Visual hierarchy.** Is there a clear hero/primary section? Are secondary sections visually subordinate?
+8. **Cross-page consistency.** Does this page use the same terminology as sibling pages? Does the TOC navigation work across pages?
+9. **The honesty test.** Read the page cold and ask: where does it surprise me? Surprises mean the atlas is lying about the codebase.
