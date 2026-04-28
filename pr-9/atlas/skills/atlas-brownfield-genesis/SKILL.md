@@ -233,6 +233,7 @@ Most rendering and styling pitfalls are documented in `references/design-system.
 - **Don't start writing pages before the user confirms the plan.** Producing 4 HTML pages and then finding out the user wanted a different container split is a large redo.
 - **Don't duplicate existing docs.** If a developer-guide or docs site already covers something at the right level, link to it.
 - **Don't write CONTEXT.md first.** Atlas before CONTEXT — otherwise CONTEXT picks up structural content that belongs in the atlas.
+- **Don't put `refs.js` after `enhancer.js` in the script footer.** Both are `defer`, so they execute in document order. `enhancer.js` reads `window.ATLAS_REFS` on init — if `refs.js` hasn't run yet, code refs won't become GitHub links. Silent failure, easy to miss.
 
 ---
 
@@ -267,4 +268,5 @@ After atlas is complete, the user may want to evaluate the architecture — asse
 - **v0.1:** Markdown atlas with one-diagram-per-file.
 - **v0.2:** Docs-only variant validated.
 - **v0.3:** HTML-first rewrite. Agent produces HTML directly using design system reference.
-- **v0.4:** Per-page rewrite. Batch authoring replaced with per-page loop: focused codebase read per page, awareness of already-built pages, self-verification against declared essence. Agent-produced coherence review added as final quality gate.
+- **v0.4:** Per-page rewrite. Batch authoring replaced with per-page loop: focused codebase read per page, awareness of already-built pages, self-verification against declared essence. Agent-produced coherence review added as final quality gate. Design system reference file added (component catalogue, decision framework, anti-patterns, quality checks).
+- **v0.5:** First full run with per-page process (4 pages, data pipeline project). Validated the loop end-to-end. Companion footer pattern removed. Discovered card-grid (3-col auto-fit) overflows with schema tables containing long field names — use grid-2 for tables.
