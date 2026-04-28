@@ -4,7 +4,7 @@ How an atlas comes into being, gets maintained, and when it's reviewed. See [abs
 
 ## Genesis — how it's first produced
 
-Differs by mode, because the starting material differs. In both cases, the agent produces HTML directly — no intermediate markdown. The design system assets (CSS/JS) are copied from the reference example; the HTML pages are authored from scratch using the reference as in-context learning.
+Differs by mode, because the starting material differs. In both cases, the agent produces HTML directly — no intermediate markdown. The design system assets (CSS/JS) are carried via a `base/` git submodule pointing at `yoniebans.github.io`; the HTML pages are authored from scratch using the reference as in-context learning.
 
 ### Greenfield
 
@@ -68,13 +68,13 @@ The agent produces HTML directly. No markdown intermediate, no build step.
 
 **Inputs the agent uses:**
 1. The atlas vault notes (this file + [structure](structure.md) + [discipline](discipline.md)) — what to produce, rules
-2. The design system assets from the reference example — CSS/JS to copy
+2. The design system assets via the `base/` submodule — CSS/JS referenced as `base/styles.css`, etc.
 3. The reference example's HTML pages — in-context learning for structure, voice, component patterns
 4. Static analysis / documents / user interview answers — the actual content
 
 **Process:**
-1. Agent copies design system assets (styles.css, mermaid-zoom.js, scrollspy.js, enhancer.js) into `<project>/atlas/`
-2. Agent produces each HTML page, following the page anatomy from [structure](structure.md)
+1. Agent adds a `base/` git submodule pointing at `yoniebans.github.io` (or updates it if it exists)
+2. Agent produces each HTML page, referencing `base/styles.css`, `base/mermaid-zoom.js`, etc.
 3. Agent populates `refs.json` with concept → repo path mappings
 4. Agent adds `data-ref` attributes to code chips that reference repo concepts
 5. User reviews each page in browser, agent patches based on feedback
