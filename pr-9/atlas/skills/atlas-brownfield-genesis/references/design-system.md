@@ -54,6 +54,7 @@ Every atlas page follows this exact structure:
 - All JS loaded as classic `<script defer>`, never `<script type="module">` (breaks `file://`).
 - The `base/` prefix comes from the git submodule. Never inline styles from `styles.css`.
 - Script order matters — `mermaid-zoom.js` must come before `scrollspy.js`. `refs.js` must come before `enhancer.js` (enhancer reads `ATLAS_REFS` on init).
+- `reviews/` directory holds quality review documents (coherence, audit, drift). These stay in the repo but don't ship as atlas pages.
 
 ---
 
