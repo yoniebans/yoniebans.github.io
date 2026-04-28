@@ -1,6 +1,6 @@
 ---
 name: atlas-audit
-description: "Audit an existing atlas by working in reverse: HTML → understanding → codebase verification. Per-page analysis followed by cross-page coherence review. Produces a report for human review — no automated fixes."
+description: "Audit an existing atlas by working in reverse: HTML → codebase verification. Per-page analysis followed by cross-page coherence review. Produces a report for human review — no automated fixes."
 maturity: "v0.1, April 2026. Untested."
 tags: [atlas, audit, quality, review]
 related_skills: [brownfield-atlas-genesis, atlas-drift-detection]
@@ -10,7 +10,7 @@ related_skills: [brownfield-atlas-genesis, atlas-drift-detection]
 
 **Trigger:** "Audit the atlas", "review atlas quality", "is the atlas accurate", or any request to verify an existing atlas against its codebase.
 
-**Direction:** This skill works in *reverse* from brownfield-atlas-genesis. Genesis goes codebase → HTML. This skill goes HTML → understanding → codebase verification.
+**Direction:** This skill works in *reverse* from brownfield-atlas-genesis. Genesis goes codebase → HTML. This skill goes HTML → codebase verification.
 
 **Output:** A report at `<workspace>/atlas-audit-<project>/report.md` for the user to read. No PRs, no automated fixes. The report informs human judgment about what to update.
 
@@ -29,12 +29,14 @@ Ask the user for both if not obvious from context. Confirm before proceeding.
 
 ## Pre-flight reads (mandatory)
 
-Before auditing, load the atlas philosophy so you know what a good atlas looks like:
+Before auditing, load the atlas philosophy so you know what a good atlas looks like.
+
+These docs live in the same repo at `atlas/docs/`:
 
 ```
-1. /mnt/hermes/vault/atlas/abstract.md       (what an atlas is)
-2. /mnt/hermes/vault/atlas/structure.md      (page types, design system, page anatomy)
-3. /mnt/hermes/vault/atlas/discipline.md     (rules: orienting prose, no essays, redirection table)
+1. atlas/docs/abstract.md       (what an atlas is)
+2. atlas/docs/structure.md      (page types, design system, page anatomy)
+3. atlas/docs/discipline.md     (rules: orienting prose, no essays, redirection table)
 ```
 
 These define the evaluation criteria. Without them you'll judge pages by generic documentation standards instead of atlas-specific ones.
@@ -58,7 +60,7 @@ Before touching the codebase, answer these questions from the HTML alone:
 - **What mental model should a reader walk away with?** One sentence. This is the page's thesis.
 - **What concepts does this page claim to own?** List every named component, entity, flow, or abstraction that this page treats as primary content (not just a passing mention or cross-reference).
 
-### Step 1.3 — Identify codebase areas to verify
+### Step 1.3 — Verify claims against the codebase
 
 From the page's content, derive a verification plan — which parts of the codebase need reading to confirm or refute the page's claims. Be specific: file paths, directories, patterns to search for.
 
@@ -69,9 +71,18 @@ Sources of verification targets:
 - Schema tables → find the real schema definitions
 - Sequence flows → trace the actual call paths
 
-### Step 1.4 — Read the codebase
+Execute the plan. Read the relevant files. Use `search_files` for discovery when you don't know exact paths. Be thorough — the audit's value comes from actually checking, not inferring.
 
-Execute the verification plan. Read the relevant files. Use `search_files` for discovery when you don't know exact paths. Be thorough — the audit's value comes from actually checking, not inferring.
+### Step 1.4 — Independent discovery: what did the atlas miss?
+
+This is the step that makes the audit more than a fact-check. Don't just verify what the page claims — explore the codebase areas within this page's remit and look for things the original codebase → HTML pass failed to surface.
+
+For the page's domain (architecture, data model, sequences, etc.), do a fresh scan:
+- **Directory walk** — what's in the relevant source directories that the page doesn't mention?
+- **Pattern search** — are there components, entities, flows, or interfaces that fit this page's concern but aren't represented?
+- **Scale check** — does the page's level of detail match the actual complexity? (e.g. a container with 12 internal modules represented as a single box)
+
+This is where the audit finds blind spots, not just staleness.
 
 ### Step 1.5 — Produce per-page findings
 
@@ -108,7 +119,10 @@ Build a concept × page matrix. For every named concept that appears on more tha
 - Which pages **reference** it (mentions in passing, cross-links)?
 - Where is there **overlap** — the same concept described at similar depth on multiple pages?
 
-Overlap isn't always bad. A container mentioned on the architecture page and as a sequence participant is fine. The same container's internal structure described in detail on *both* the architecture page and the data-model page is redundant.
+Overlap should be intentional and navigable. When a concept appears on multiple pages:
+- The **owning page** treats it with depth — this is the canonical description.
+- **Referencing pages** should mention it briefly and cross-link to the owning page/section (e.g. "see Data Model → Entity Map for schema detail").
+- Flag cases where two pages describe the same concept at similar depth without cross-referencing each other — this confuses the reader about which page is authoritative.
 
 ### Gap analysis
 
@@ -120,6 +134,8 @@ Overlap isn't always bad. A container mentioned on the architecture page and as 
 - Do pages **tell a consistent story**? If the architecture page says there are 5 containers, do the other pages agree?
 - Do cross-references land correctly? (Page A mentions "see the data model" — does page B actually cover that thing?)
 - Is the **level of detail consistent** across pages, or does one page go much deeper than the others?
+- When concepts appear on multiple pages, do the descriptions **agree**? (Same container described differently on two pages = reader confusion)
+- Are cross-references **bidirectional where needed**? (If page A references page B's concept, does page B acknowledge the relationship?)
 
 ### Overall assessment
 
