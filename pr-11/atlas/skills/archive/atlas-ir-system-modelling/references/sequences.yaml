@@ -1,0 +1,235 @@
+# Atlas IR Reference — Sequences Page
+#
+# This is the exhaustive reference for what a sequences page can express.
+# Nothing should be produced that doesn't align with this template.
+#
+# These are the flows that define how the system thinks. Not every API endpoint,
+# not every event handler — the 3-7 interactions that, once understood, make
+# everything else predictable. If someone reads only these sequences, they should
+# be able to reason about what the system will do in situations they haven't seen.
+#
+# The zoom principle applied to behaviour:
+#   Flow Map        → which flows exist and why they matter (orientation)
+#   Sequence Detail → the actual interaction, step by step (understanding)
+#   Patterns        → recurring interaction shapes across flows (insight)
+#
+# Diagrams are Mermaid sequenceDiagrams. Auxiliary content — participant
+# summaries, key step callouts, edge case notes — complements the diagrams
+# but the diagram is always the primary artifact.
+
+page:
+  type: sequences
+  subject: ""                         # the software system whose behaviour is being modelled
+
+# ─────────────────────────────────────────────
+# FLOW MAP (always present)
+# ─────────────────────────────────────────────
+# The orientation layer. Which flows exist, what each one demonstrates,
+# and why it was selected.
+#
+# Equivalent to the entity map on the data page — before diving into any
+# sequence, the reader sees the territory.
+#
+# This is NOT a diagram — it's a structured listing that tells the reader:
+# "here are the N flows we're about to walk through, here's what each one
+# covers, here's what order to read them in."
+#
+# MODELLING DECISIONS:
+# - How many flows? 3-7. Fewer means the system is simple enough that this
+#   page may not be needed. More means you're documenting endpoints, not
+#   architecture.
+# - Which flows? The ones that satisfy: "if you understand these, you
+#   understand how the system works." Criteria:
+#   (a) Exercises the main path through the system (happy path)
+#   (b) Reveals architectural boundaries (where containers talk to each other)
+#   (c) Shows a non-obvious mechanism (compression, retry, delegation)
+#   (d) Represents a category of interaction (one CRUD flow stands for all CRUD)
+# - Ordering: from most fundamental to most specialised. The first flow
+#   should be "the thing the system exists to do." Later flows reveal
+#   nuance, edge cases, secondary paths.
+# - Grouping: if flows naturally cluster (e.g., "entry flows" vs "internal
+#   mechanisms"), name the groups. Don't force grouping if it's artificial.
+
+flow_map:
+  description: ""                     # one-sentence framing — what aspect of the system these flows reveal
+  groups:                             # optional — group flows if natural clusters exist
+    - name: ""                        # e.g. "Entry Paths", "Core Mechanisms", "Error Handling"
+      description: ""
+      flows: []                       # names of flows in this group (must match flow names below)
+  flows:                              # ordered list — read order matters
+    - name: ""                        # short name — "CLI Message Flow", "Agent Loop", "Tool Execution"
+      description: ""                 # what this flow demonstrates, in one sentence
+      trigger: ""                     # what initiates this flow — user action, event, timer, internal condition
+      why_included: ""                # why this flow is architecturally significant — what does the reader
+                                      # learn from it that they can't learn from the others?
+
+# ─────────────────────────────────────────────
+# SEQUENCES (always present — one per flow)
+# ─────────────────────────────────────────────
+# The actual interaction, step by step. Each flow from the flow map gets
+# a full sequence here.
+#
+# Each sequence has:
+# - Participants: who's involved, what they are, what role they play in THIS flow
+# - Steps: ordered interactions — the spine of the sequence diagram
+# - Key moments: the 2-3 steps that are the point of this flow — the thing
+#   the reader should remember. Not every step is equally important.
+# - Edge cases / alternatives: what happens when things go wrong, or when
+#   a different path is taken. These appear as notes on the diagram, not
+#   as separate flows (unless the alternative path is architecturally
+#   significant enough to be its own flow).
+#
+# MODELLING DECISIONS:
+# - Abstraction level of participants: can be people, systems, containers,
+#   or components. C4 allows mixing. Pick the level that makes the flow
+#   readable — usually containers for cross-boundary flows, components for
+#   internal mechanisms.
+# - How many steps? Enough to convey the mechanism, not so many that it
+#   becomes a line-by-line code trace. Typical: 5-15 steps per sequence.
+#   If you're above 20, the flow should probably be split or abstracted.
+# - Protocols: state the protocol for every interaction that crosses a
+#   container boundary. Omit for intra-container calls (they're in-process).
+# - Return values: include when they carry architectural meaning ("returns
+#   session token", "returns compressed context"). Skip when obvious
+#   ("returns 200 OK").
+# - Loops / conditionals: show them when they're the point of the flow
+#   (retry loops, conditional delegation). Don't litter every sequence
+#   with opt/alt blocks for routine error handling.
+# - Activation boxes: implicit in sequence diagrams. Don't model explicitly
+#   in the IR — the diagram tool handles them.
+
+sequences:
+  - name: ""                          # must match a flow name from flow_map
+    participants:
+      - name: ""                      # display name on the diagram
+        element_type: ""              # person | system | container | component
+        technology: ""                # optional — only when it matters for the flow
+                                      # (e.g., "JavaScript SPA" matters when the flow involves
+                                      # client-side rendering; "Spring Bean" usually doesn't)
+        description: ""               # optional — role in THIS flow specifically, not general description
+                                      # useful when a participant does something unexpected or
+                                      # domain-specific ("acts as the compression oracle")
+
+    steps:
+      - order: 1
+        source: ""                    # participant name
+        target: ""                    # participant name
+        label: ""                     # what happens — be specific and use domain language
+                                      # good: "submits credentials"
+                                      # good: "compresses context to fit token budget"
+                                      # bad:  "sends request"
+                                      # bad:  "calls function"
+        technology: ""                # protocol — required when crossing container boundaries
+                                      # e.g. "JSON/HTTPS", "gRPC", "WebSocket", "MySQL protocol"
+                                      # omit for intra-container (in-process) calls
+        return: ""                    # optional — what comes back, when architecturally meaningful
+                                      # e.g. "session token", "compressed message list", "tool result"
+        is_key_moment: false          # true for the 2-3 steps that ARE the point of this flow
+        note: ""                      # optional — short annotation on this step
+                                      # for edge cases, alternatives, non-obvious behaviour
+                                      # e.g. "retries up to 3 times with exponential backoff"
+                                      # e.g. "skipped if context fits within token budget"
+
+    # Fragments — loops, conditionals, parallel blocks that appear on the diagram.
+    # Model only when the fragment IS the architectural insight.
+    # A retry loop is worth modelling. A null check is not.
+    fragments:
+      - type: ""                      # loop | alt | opt | par | break | critical
+        label: ""                     # the condition — "while token count > budget",
+                                      #                  "if credentials valid", "for each tool call"
+        over_steps: []                # which step orders are inside this fragment (e.g. [3, 4, 5])
+        branches:                     # for alt/opt — the different paths
+          - condition: ""             # e.g. "valid credentials", "invalid credentials"
+            steps: []                 # step orders in this branch
+
+    # Notes — annotations that appear on the diagram but aren't interaction steps.
+    # Use for: constraints, timing, side effects, things the reader needs to know
+    # that aren't captured by the step labels.
+    notes:
+      - over: ""                      # participant name, or "between X and Y"
+        position: ""                  # left | right | over
+        text: ""                      # the annotation
+
+    diagram: ""                       # path to .mmd file
+
+# ─────────────────────────────────────────────
+# PATTERNS (optional)
+# ─────────────────────────────────────────────
+# Recurring interaction shapes that appear across multiple flows.
+# The insight layer — once the reader has seen the individual sequences,
+# patterns reveal the system's behavioural architecture.
+#
+# Examples:
+# - "Every inbound message, regardless of entry point, passes through the
+#    same normalisation → agent loop → response pipeline"
+# - "All tool executions follow: validate → sandbox → execute → capture →
+#    return. Failures at any stage produce a structured error, not an exception"
+# - "Context compression is triggered lazily — only when the next LLM call
+#    would exceed the token budget, not proactively"
+#
+# A pattern is NOT another sequence diagram. It's a named, described
+# regularity that the reader can now recognise when they encounter it.
+# If a pattern is complex enough to need its own diagram, it should be
+# a flow in the sequences section.
+#
+# MODELLING DECISIONS:
+# - How many? 2-5. If everything is a pattern, nothing is.
+# - What qualifies? Something that:
+#   (a) Appears in ≥2 flows
+#   (b) Would surprise someone who hasn't read the code
+#   (c) Has a name — if you can't name it concisely, it's not a pattern yet
+# - Cross-reference: which flows exhibit this pattern
+
+patterns:
+  - name: ""                          # concise name — "Normalise-Loop-Respond Pipeline",
+                                      #                 "Lazy Compression", "Structured Error Propagation"
+    description: ""                   # what the pattern is — the regularity, the invariant
+    exhibited_in: []                  # which flows from the sequences section show this pattern
+    significance: ""                  # why this matters — what does knowing this pattern buy the reader?
+
+# ─────────────────────────────────────────────
+# PARTICIPANT GLOSSARY (optional)
+# ─────────────────────────────────────────────
+# When the same participants appear across multiple sequences, a central
+# glossary avoids repeating descriptions. Each sequence's participant list
+# can then be just names + flow-specific roles.
+#
+# Include when: ≥3 sequences share ≥3 participants.
+# Skip when: each sequence has mostly unique participants.
+
+participant_glossary:
+  - name: ""
+    element_type: ""                  # person | system | container | component
+    technology: ""
+    description: ""                   # general description — what this participant IS
+    appears_in: []                    # which sequences reference this participant
+
+# ─────────────────────────────────────────────
+# REFS
+# ─────────────────────────────────────────────
+
+refs:
+  "": { path: "", symbol: "" }
+
+# ─────────────────────────────────────────────
+# MODELLING NOTES
+# ─────────────────────────────────────────────
+# The agent's reasoning about sequence modelling decisions. Not rendered.
+#
+# Examples:
+# - "Selected 5 flows: CLI entry, gateway entry, agent loop, tool execution,
+#    subagent delegation. CLI and gateway are both entry paths but differ
+#    enough in mechanism (direct vs adapter) to warrant separate sequences."
+# - "Agent loop is the defining flow — everything else is entry or exit.
+#    Placed it third so the reader has seen an entry path first."
+# - "Omitted 'memory retrieval' as a separate flow — it's a step inside
+#    the agent loop, not architecturally distinct."
+# - "Showed context compression as its own flow even though it's technically
+#    a sub-routine of the agent loop — the mechanism (lazy trigger, iterative
+#    summarisation) is non-obvious and worth dedicated attention."
+# - "Pattern: all entry paths converge to the same normalised message format
+#    before hitting the agent loop. This is the single most important
+#    architectural invariant."
+
+modelling_notes:
+  - ""
