@@ -1,3 +1,7 @@
+> **Superseded.** The umbrella messaging now lives in `commons/docs/messaging.md`.
+> This document retains the atlas-specific framing from April 2026.
+> — May 2026
+
 The messaging layer for atlas — why it matters, who it matters to, and the language that lands. Reworked April 21, 2026. See [abstract](abstract.md) for what atlas is.
 
 ---
