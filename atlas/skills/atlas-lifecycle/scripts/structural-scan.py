@@ -35,8 +35,11 @@ ENTRY_POINT_PATTERNS = [
     "go.mod", "cargo.toml", "makefile", "justfile",
 ]
 
-# Directories to exclude from structural analysis (noise, not architecture)
-EXCLUDE_DIRS = {"tests", "test", "__pycache__", "node_modules", ".git", "website", "docs", "skills", "optional-skills"}
+# Directories to exclude from structural analysis (noise, not architecture).
+# This is the fallback when daemon.yaml omits `detection.exclude_dirs`. Keep it
+# conservative — anything project-specific (e.g. "website", "skills") belongs
+# in daemon.yaml.
+DEFAULT_EXCLUDE_DIRS = {"tests", "test", "__pycache__", "node_modules", ".git"}
 
 
 def run(cmd, cwd=None):
@@ -71,6 +74,7 @@ def main():
     remote = config["repo"].get("remote", "origin")
     branch = config["repo"].get("branch", "main")
     baseline = config["detection"]["baseline_ref"]
+    exclude_dirs = set(config["detection"].get("exclude_dirs", DEFAULT_EXCLUDE_DIRS))
 
     # Pull latest
     run(f"git fetch {remote}", cwd=repo_path)
@@ -94,13 +98,13 @@ def main():
     added_dirs = set()
     for f in added_files:
         d = top_level_dir(f)
-        if d and d not in EXCLUDE_DIRS:
+        if d and d not in exclude_dirs:
             added_dirs.add(d)
 
     deleted_dirs = set()
     for f in deleted_files:
         d = top_level_dir(f)
-        if d and d not in EXCLUDE_DIRS:
+        if d and d not in exclude_dirs:
             deleted_dirs.add(d)
 
     # Filter to genuinely new dirs (didn't exist at baseline)
@@ -129,7 +133,7 @@ def main():
         counts = defaultdict(int)
         for line in run(f"git ls-tree -r --name-only {ref}", cwd=repo_path):
             d = top_level_dir(line)
-            if d and d not in EXCLUDE_DIRS:
+            if d and d not in exclude_dirs:
                 counts[d] += 1
         return counts
 

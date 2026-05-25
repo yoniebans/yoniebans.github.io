@@ -110,29 +110,48 @@ def check_data_refs(html_content, page_name, refs_js_path, repo_path):
 
 # --- Paragraph discipline ---
 
-def check_paragraph_length(html_content, page_name):
-    """Check for paragraphs longer than 3 lines (heuristic: >300 chars)."""
+def check_paragraph_length(html_content, page_name, max_chars=350):
+    """Flag paragraphs longer than max_chars (default 350).
+
+    Note: HTML <p> tags don't typically contain newlines, so we can't use
+    line count as a proxy for "3 lines". The 350-char threshold is the
+    practical equivalent at typical reading widths.
+    """
     findings = []
-    # Extract text from <p> tags
     for match in re.finditer(r"<p[^>]*>(.*?)</p>", html_content, re.DOTALL):
         text = re.sub(r"<[^>]+>", "", match.group(1)).strip()
-        lines = text.count("\n") + 1
-        if lines > 3 or len(text) > 350:
-            preview = text[:80].replace("\n", " ")
-            findings.append(f"  [{page_name}] paragraph > 3 lines: '{preview}...'")
+        text = re.sub(r"\s+", " ", text)
+        if len(text) > max_chars:
+            preview = text[:80]
+            findings.append(
+                f"  [{page_name}] paragraph > {max_chars} chars ({len(text)}): '{preview}...'"
+            )
     return findings
 
 
 # --- Cross-page number consistency ---
 
-NUMBER_PATTERN = re.compile(r'(\d+)\+?\s*([\w\s-]{3,30}?)(?:\s*(?:tools|adapters|providers|platforms|tasks|channels|hooks|sequences|pages|entry|surfaces|plugins|categories|models))', re.IGNORECASE)
+DEFAULT_VERSION_NOUNS = [
+    "tools", "adapters", "providers", "platforms", "tasks", "channels",
+    "hooks", "sequences", "pages", "entry", "surfaces", "plugins",
+    "categories", "models",
+]
 
 
-def extract_numbers(html_content, page_name):
+def build_number_pattern(nouns):
+    """Build a regex that captures '<number> ... <noun>' claims."""
+    nouns_alt = "|".join(re.escape(n) for n in nouns)
+    return re.compile(
+        rf'(\d+)\+?\s*([\w\s-]{{3,30}}?)(?:\s*(?:{nouns_alt}))',
+        re.IGNORECASE,
+    )
+
+
+def extract_numbers(html_content, page_name, number_pattern):
     """Extract quantified claims: '25+ platform adapters', '8 Key Sequences' etc."""
     claims = []
     text = re.sub(r"<[^>]+>", " ", html_content)
-    for match in NUMBER_PATTERN.finditer(text):
+    for match in number_pattern.finditer(text):
         num = int(match.group(1))
         label = match.group(0).strip()
         claims.append((page_name, num, label))
@@ -160,7 +179,7 @@ def check_cross_page_numbers(all_claims):
 
 # --- Version string check ---
 
-def check_version(atlas_path, pages, repo_path, version_source):
+def check_version(atlas_path, pages, repo_path, version_source, footer_pattern):
     """Compare version in code repo against atlas footers."""
     findings = []
     if not version_source:
@@ -190,13 +209,14 @@ def check_version(atlas_path, pages, repo_path, version_source):
         return findings
 
     # Check each atlas page footer
+    footer_re = re.compile(footer_pattern)
     for page_file in pages:
         page_path = Path(atlas_path) / page_file
         if not page_path.exists():
             continue
         page_content = page_path.read_text()
-        # Look for version strings like v0.14.0 in footer area
-        footer_versions = re.findall(r'v(\d+\.\d+\.\d+)', page_content[-2000:])
+        # Look for version strings in footer area (last 2000 bytes)
+        footer_versions = footer_re.findall(page_content[-2000:])
         if footer_versions:
             for fv in set(footer_versions):
                 if fv != version:
@@ -222,6 +242,13 @@ def main():
     refs_js_name = config["atlas"].get("refs_js", "refs.js")
     version_source = config["repo"].get("version_source", "")
 
+    linters_cfg = config.get("linters", {}) or {}
+    version_nouns = linters_cfg.get("version_nouns", DEFAULT_VERSION_NOUNS)
+    footer_version_pattern = linters_cfg.get(
+        "footer_version_pattern", r"v(\d+\.\d+\.\d+)"
+    )
+    number_pattern = build_number_pattern(version_nouns)
+
     refs_js_path = Path(atlas_path) / refs_js_name
 
     all_findings = []
@@ -239,11 +266,13 @@ def main():
         all_findings.extend(check_css_collisions(html, page_file))
         all_findings.extend(check_data_refs(html, page_file, refs_js_path, repo_path))
         all_findings.extend(check_paragraph_length(html, page_file))
-        all_number_claims.extend(extract_numbers(html, page_file))
+        all_number_claims.extend(extract_numbers(html, page_file, number_pattern))
 
     # Cross-page checks
     all_findings.extend(check_cross_page_numbers(all_number_claims))
-    all_findings.extend(check_version(atlas_path, pages, repo_path, version_source))
+    all_findings.extend(
+        check_version(atlas_path, pages, repo_path, version_source, footer_version_pattern)
+    )
 
     # Output
     print(f"ATLAS LINTER REPORT ({config['project']})")

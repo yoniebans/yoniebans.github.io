@@ -1,7 +1,9 @@
----
+<!--
+Reference for atlas-lifecycle skill — NOT a standalone skill.
 name: atlas-genesis
-description: "Reverse-engineer an interactive HTML atlas for an existing project. Per-page authoring with focused codebase reads, coherence review at the end."
----
+description: Reverse-engineer an interactive HTML atlas for an existing project. Per-page authoring with focused codebase reads, coherence review at the end.
+-->
+
 
 # Atlas genesis
 
