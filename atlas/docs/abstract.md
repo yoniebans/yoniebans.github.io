@@ -1,3 +1,8 @@
+> **Superseded.** Atlas is now the architectural category of a broader concept: **commons**.
+> See `commons/docs/abstract.md` for the umbrella framing.
+> This document remains correct for the atlas category specifically.
+> — May 2026
+
 An **atlas** is the shared abstract layer between human and machine understanding of a project. Not docs, not a README — the mental model itself, materialized as an interactive HTML site that both the human and the agent produce, read, and share.
 
 Every project (greenfield or brownfield) gets one. How it comes into being differs by mode; what it *is* does not. See [lifecycle](lifecycle.md) for when each mode produces it.
