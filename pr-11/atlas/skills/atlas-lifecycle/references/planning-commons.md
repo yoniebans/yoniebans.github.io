@@ -1,7 +1,9 @@
----
+<!--
+Reference for atlas-lifecycle skill — NOT a standalone skill.
 name: atlas-planning-commons
-description: "Author a single, disposable, dated planning commons page for a specific question or proposed change. Same design system as the atlas, but the artifact is a per-topic page, not canonical documentation."
----
+description: Author a single, disposable, dated planning commons page for a specific question or proposed change. Same design system as the atlas, but the artifact is a per-topic page, not canonical documentation.
+-->
+
 
 # Planning commons
 

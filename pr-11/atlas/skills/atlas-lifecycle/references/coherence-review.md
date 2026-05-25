@@ -1,7 +1,9 @@
----
+<!--
+Reference for atlas-lifecycle skill — NOT a standalone skill.
 name: atlas-coherence-review
-description: "Weekly cross-page coherence review of an atlas. Runs on a separate cadence from daily drift detection. Catches concept-ownership violations, inconsistent counts, coverage gaps, and cross-reference drift."
----
+description: Weekly cross-page coherence review of an atlas. Runs on a separate cadence from daily drift detection. Catches concept-ownership violations, inconsistent counts, coverage gaps, and cross-reference drift.
+-->
+
 
 # Atlas coherence review (weekly)
 

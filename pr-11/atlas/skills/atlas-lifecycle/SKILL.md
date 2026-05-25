@@ -197,7 +197,10 @@ directory? If no, skip.
 ## Git conventions
 
 - Always pipe git/gh commands through `| cat` (prevents terminal from blocking).
-- Use env vars for git author: `GIT_AUTHOR_NAME=morpheus GIT_COMMITTER_NAME=morpheus`.
+- Set the agent's identity via env vars on commit/push commands:
+  `GIT_AUTHOR_NAME="$AGENT_GIT_NAME" GIT_COMMITTER_NAME="$AGENT_GIT_NAME"` —
+  read the name from your local agent profile, not from this skill. Don't bake
+  a specific agent name into commands here.
 - PR body via temp file (`--body-file /tmp/pr_body.md`) to avoid shell quoting issues.
 - Never push to main directly. Branch + PR for all atlas changes.
 
@@ -225,9 +228,19 @@ atlas:
 detection:
   baseline_ref: "<commit-sha>"       # last known-good commit in code repo
   strategy: static-diff
+  exclude_dirs:                      # dirs to ignore in structural scan
+    - tests
+    - node_modules
+linters:
+  version_nouns:                     # nouns the cross-page number linter cares about
+    - tools
+    - adapters
+  footer_version_pattern: 'v(\d+\.\d+\.\d+)'   # regex for footer version
 ```
 
-A template lives at `templates/daemon.yaml` in this skill.
+A template lives at `templates/daemon.yaml` in this skill. `exclude_dirs`,
+`version_nouns`, and `footer_version_pattern` are project-specific knobs —
+override them for non-hermes-agent projects.
 
 ---
 

@@ -1,8 +1,8 @@
 A **commons** is a shared, living reference artifact that humans and agents coordinate around. Not documentation, not a wiki, not chat — a navigable surface that both parties read, point at, refine, and maintain together.
 
-Every non-trivial project gets one. How it comes into being differs by category and mode; what it *is* does not. See [lifecycle](lifecycle.md) for when each mode produces it.
+Every non-trivial project gets one. How it comes into being differs by category and mode; what it *is* does not. The first concrete category is atlas — the architectural commons of a codebase — and its lifecycle is documented in `../atlas/docs/lifecycle.md`. Other categories will follow as they materialise.
 
-Written May 8, 2026. Supersedes the earlier "atlas" framing from April 17–28 — atlas is preserved as the first concrete category of commons (the architectural commons of a codebase) but the umbrella concept is now commons. See [messaging](messaging.md), [structure](structure.md), [discipline](discipline.md).
+Written May 8, 2026. Supersedes the earlier "atlas" framing from April 17–28 — atlas is preserved as the first concrete category of commons but the umbrella concept is now commons. See [messaging](messaging.md), [attribution](attribution.md), and (atlas-specific until other categories materialise) `../atlas/docs/structure.md` and `../atlas/docs/discipline.md`.
 
 ---
 
@@ -26,11 +26,11 @@ A commons occupies the slot none of these fill: **shared spatial reference + age
 
 A per-project directory of HTML pages, organized by category, served from the project's commons repo. Each page is a self-contained reference for one concern — a system, a decision, a timeline, a concept, a snapshot.
 
-- [structure](structure.md) — page types, directory layout, design system
-- [discipline](discipline.md) — rules that keep it a shared reference, not a dump
-- [lifecycle](lifecycle.md) — how pages come into being, how they're maintained, when reviewed
 - [messaging](messaging.md) — why it matters, who it matters to, the language that lands
 - [attribution](attribution.md) — what we drew from, what converged with us
+- `../atlas/docs/structure.md` — page types, directory layout, design system (atlas-specific until other categories materialise)
+- `../atlas/docs/discipline.md` — rules that keep it a shared reference, not a dump (atlas-specific until other categories materialise)
+- `../atlas/docs/lifecycle.md` — how pages come into being, how they're maintained, when reviewed (atlas-specific until other categories materialise)
 
 ---
 
