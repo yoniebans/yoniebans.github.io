@@ -1,7 +1,9 @@
----
+<!--
+Reference for atlas-lifecycle skill — NOT a standalone skill.
 name: atlas-drift-detection
-description: "Detect architectural drift between a codebase and its atlas. Three-layer daily scan: structural (git diff), atlas linters (HTML parse), and claim verification (LLM). Config-driven via daemon.yaml for use on any repo."
----
+description: Detect architectural drift between a codebase and its atlas. Three-layer daily scan: structural (git diff), atlas linters (HTML parse), and claim verification (LLM). Config-driven via daemon.yaml for use on any repo.
+-->
+
 
 # Atlas drift detection
 
@@ -153,7 +155,7 @@ Note findings in PR body under `## Coherence review`.
 
 **6d. Commit, push, open/update PR:**
 ```bash
-git add . && GIT_AUTHOR_NAME=morpheus GIT_COMMITTER_NAME=morpheus git commit -F /tmp/commit.txt 2>&1 | cat
+git add . && GIT_AUTHOR_NAME="$AGENT_GIT_NAME" GIT_COMMITTER_NAME="$AGENT_GIT_NAME" git commit -F /tmp/commit.txt 2>&1 | cat
 git push -u origin HEAD 2>&1 | cat
 gh pr create --title "atlas: drift $(date +%Y-%m-%d)" --body-file /tmp/pr_body.md 2>&1 | cat
 ```
@@ -168,11 +170,17 @@ gh pr create --title "atlas: drift $(date +%Y-%m-%d)" --body-file /tmp/pr_body.m
 
 ### Script placement
 
-Cron `script` only accepts filenames relative to `~/.hermes/scripts/`. A wrapper at
-`~/.hermes/scripts/atlas-drift-scan.py` calls into the skill's scripts:
+Cron `script` only accepts filenames relative to `~/.hermes/scripts/`. The wrapper
+at `~/.hermes/scripts/atlas-drift-scan.py` resolves the skill's scripts via the
+installed-skills path. Resolve it from `~/.hermes/skills/` (or wherever the
+`atlas-lifecycle` skill is installed for the current profile), not via a
+relative `.parent.parent` walk — the relative path is fragile across profiles
+and `external_dirs` configurations.
 
 ```python
-SCAN_SCRIPT = Path(__file__).parent.parent / "skills" / ... / "scripts" / "structural-scan.py"
+SKILL_ROOT = Path.home() / ".hermes/skills/atlas-lifecycle"   # or your install path
+SCAN_SCRIPT = SKILL_ROOT / "scripts/structural-scan.py"
+LINT_SCRIPT = SKILL_ROOT / "scripts/atlas-linters.py"
 ```
 
 The wrapper must:

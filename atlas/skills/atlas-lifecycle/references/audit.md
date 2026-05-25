@@ -1,7 +1,9 @@
----
+<!--
+Reference for atlas-lifecycle skill — NOT a standalone skill.
 name: atlas-audit
-description: "Audit an existing atlas by working in reverse: HTML → codebase verification. Per-page analysis followed by cross-page coherence review."
----
+description: Audit an existing atlas by working in reverse: HTML → codebase verification. Per-page analysis followed by cross-page coherence review.
+-->
+
 
 # Atlas audit
 
