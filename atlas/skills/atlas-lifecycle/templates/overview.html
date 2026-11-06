@@ -1,0 +1,172 @@
+<!--
+  Ad-hoc planning commons — OVERVIEW template
+  See: yoniebans.github.io/atlas/skills/adhoc-planning-commons/SKILL.md
+
+  Single-state mode: one diagram of the system in scope, affected-components grid,
+  open questions, forward-links to atlas. Use when the question is "what are we touching?"
+
+  Replace all <REPLACE: …> placeholders. Keep the structure.
+  base/ loads live from yoniebans.github.io — no submodule needed.
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><REPLACE: Topic> — Planning Commons</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Fira+Code:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://yoniebans.github.io/styles.css">
+  <link rel="stylesheet" href="https://yoniebans.github.io/presentation.css">
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+  <script>mermaid.initialize({ startOnLoad: false, theme: 'dark', themeVariables: { primaryColor: '#1e293b', primaryTextColor: '#e2e8f0', lineColor: '#475569', secondaryColor: '#0f172a', tertiaryColor: '#1e293b' }});</script>
+  <script src="https://yoniebans.github.io/theme.js"></script>
+</head>
+<body>
+<div class="wrap">
+
+  <main class="main" style="max-width: 1100px; margin: 0 auto;">
+
+    <section id="overview">
+      <h1 class="anim" style="--i:0"><REPLACE: Topic title></h1>
+      <p class="subtitle anim" style="--i:1">Planning Commons &mdash; <REPLACE: YYYY-MM-DD> &mdash; <REPLACE: repo or scope></p>
+      <p class="lead anim" style="--i:2">
+        <REPLACE: One paragraph stating the single question this page answers, and the
+        mental model the reader should walk away with. Keep it tight — three sentences max.>
+      </p>
+
+      <div class="kpi-row anim" style="--i:3">
+        <div class="kpi-card">
+          <div class="kpi-card__value" style="color:var(--accent)"><REPLACE: N></div>
+          <div class="kpi-card__label"><REPLACE: KPI 1 label></div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-card__value" style="color:var(--teal)"><REPLACE: N></div>
+          <div class="kpi-card__label"><REPLACE: KPI 2 label></div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-card__value" style="color:var(--amber)"><REPLACE: N></div>
+          <div class="kpi-card__label"><REPLACE: KPI 3 label></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="scope">
+      <div class="callout anim" style="--i:4">
+        <strong>Out of scope for this page.</strong> <REPLACE: What this page is intentionally NOT
+        answering. Helps protect against scope creep mid-authoring.>
+      </div>
+    </section>
+
+    <section id="system">
+      <div class="sec-head anim" style="--i:5; color:var(--accent)">
+        <span class="dot" style="background:var(--accent)"></span> System in scope
+      </div>
+      <h2 class="anim" style="--i:6"><REPLACE: One-line headline for the diagram></h2>
+      <p class="section-desc anim" style="--i:7">
+        <REPLACE: One paragraph orienting the reader to the diagram. What are they looking at?>
+      </p>
+
+      <section class="diagram-shell anim" style="--i:8">
+        <p class="diagram-shell__hint">
+          Ctrl/Cmd + wheel to zoom &middot; Scroll to pan &middot; Drag when zoomed &middot; Double-click to fit
+        </p>
+        <div class="mermaid-wrap">
+          <div class="zoom-controls">
+            <button type="button" data-action="zoom-in" title="Zoom in">+</button>
+            <button type="button" data-action="zoom-out" title="Zoom out">&minus;</button>
+            <button type="button" data-action="zoom-fit" title="Smart fit">&#8634;</button>
+            <button type="button" data-action="zoom-one" title="1:1 zoom">1:1</button>
+            <button type="button" data-action="zoom-expand" title="Open full size">&#x26F6;</button>
+            <span class="zoom-label">Loading...</span>
+          </div>
+          <div class="mermaid-viewport">
+            <div class="mermaid mermaid-canvas"></div>
+          </div>
+        </div>
+        <script type="text/plain" class="diagram-source">
+          graph TD
+            <REPLACE: nodes>
+            n1["Component A"]
+            n2["Component B"]
+            n3["Component C"]
+            n1 --> n2
+            n2 --> n3
+
+            classDef in fill:#0284c711,stroke:#0284c744,stroke-width:1.5px
+            classDef hot fill:#d9770622,stroke:#d97706,stroke-width:2px
+            class n1,n3 in
+            class n2 hot
+        </script>
+      </section>
+    </section>
+
+    <section id="affected-components">
+      <div class="sec-head anim" style="--i:9; color:var(--teal)">
+        <span class="dot" style="background:var(--teal)"></span> Affected components
+      </div>
+      <h2 class="anim" style="--i:10">Files, functions, modules in scope</h2>
+
+      <div class="grid-3 gap-24 anim" style="--i:11">
+        <div class="ve-card c-teal">
+          <div class="ve-card__label"><REPLACE: Component 1 name></div>
+          <ul class="node-list">
+            <li><code><REPLACE: path/file.py></code> — <REPLACE: what it does></li>
+            <li><REPLACE: relevant detail></li>
+          </ul>
+        </div>
+        <div class="ve-card c-accent">
+          <div class="ve-card__label"><REPLACE: Component 2 name></div>
+          <ul class="node-list">
+            <li><code><REPLACE: path/file.py></code> — <REPLACE: what it does></li>
+          </ul>
+        </div>
+        <div class="ve-card c-amber">
+          <div class="ve-card__label"><REPLACE: Component 3 name></div>
+          <ul class="node-list">
+            <li><code><REPLACE: path/file.py></code> — <REPLACE: what it does></li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section id="open-questions">
+      <div class="sec-head anim" style="--i:12; color:var(--amber)">
+        <span class="dot" style="background:var(--amber)"></span> Open questions
+      </div>
+
+      <div class="ve-card c-amber anim" style="--i:13">
+        <div class="ve-card__label">What we don't yet know</div>
+        <ul class="node-list">
+          <li><REPLACE: Open question 1 — what investigation will resolve it?></li>
+          <li><REPLACE: Open question 2></li>
+        </ul>
+      </div>
+    </section>
+
+    <section id="forward-links">
+      <div class="sec-head anim" style="--i:14; color:var(--slate)">
+        <span class="dot" style="background:var(--slate)"></span> Forward links
+      </div>
+
+      <div class="ve-card c-slate anim" style="--i:15">
+        <div class="ve-card__label">Atlas pages this would update once the work ships</div>
+        <ul class="node-list">
+          <li><a href="<REPLACE: atlas page URL>"><REPLACE: page name></a> — <REPLACE: what would change></li>
+          <li><REPLACE: another atlas page if applicable></li>
+        </ul>
+        <p style="font-size:12px;color:var(--text-dim);margin-top:8px;margin-bottom:0">
+          When the work in this commons ships, this list seeds the next drift PR or atlas update.
+        </p>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<script src="https://yoniebans.github.io/mermaid-zoom.js" defer></script>
+<script src="https://yoniebans.github.io/scrollspy.js" defer></script>
+<script src="https://yoniebans.github.io/presentation.js" defer></script>
+</body>
+</html>
