@@ -1,3 +1,9 @@
+---
+title: "Hermes conversation storage: SessionDB coverage table"
+---
+
+# Hermes conversation storage: SessionDB coverage table
+
 This table maps every public method of `SessionDB` on main (commit `ed1afb082e`, 250 methods including those it takes from its mixins), every place outside `SessionDB` where production code runs its own SQL on the store's connection (113 call sites), and every place that opens the store's own database files directly (38 call sites) to the repository operation that replaces it in this pull request: 376 rows map to operations, 3 static helpers become plain functions beside the interface, and 22 rows are not carried, each with its reason.
 
 Operations are written `Repository.operation`; every name exists in this pull request's `persistence/` package. Call sites link to main. A method that runs a sequence of operations today (a throttled maintenance pass, an adoption across two profiles) lists the operations the sequence calls, and the note says where the sequence runs.
