@@ -12,20 +12,19 @@ Both checks import main's store code from a second checkout, and that code is go
 
 | Check | Result |
 |---|---|
-| SQL map against main at `6b21d05645` | 44 failures: 42 come from main's storage changes after `ed1afb082e`, 2 are manifest bookkeeping |
-| SQL map against main at `ed1afb082e` | 2 failures, the same 2 bookkeeping entries |
-| Comparison tests with main's store (67 files, 2,713 cases) | 2,697 passed, 15 failed, 1 skipped |
-| The same 67 files without main's store | 460 passed, 0 failed, 2,253 skipped |
+| SQL map against main at `6b21d05645` | 93 failures, all coverage bookkeeping; no mapped statement differs |
+| Comparison tests with main's store (67 files, 2,714 cases) | 2,695 passed, 18 failed, 1 skipped |
+| The same 67 files without main's store | 455 passed, 5 failed, 2,254 skipped |
 
-The backend side is PR 2 rebuilt on main at `6b21d05645` (commit `0a485905ed`), with the map and the comparison tests restored on top as commit `6d0a170c4b`. All runs were on one Mac (macOS, Apple silicon) on 7 November 2026.
+The backend side is PR 2 at commit `c82228c257`, with the map and the comparison tests restored on top as commit `fae2950770`. All runs were on one Mac (macOS, Apple silicon) on 7 November 2026.
 
-PR 2's backend was written against main at commit `ed1afb082e`. The storage changes main made after it reach the backend in three later commits of the stack, which commit `0a485905ed` does not hold. Of the 15 failed cases, 11 come from those changes and pass when main at `ed1afb082e` is the comparison tree. The other 4 come from this host. None of the 15 is a difference the backend introduces on its own.
+PR 2's backend was first written against main at commit `ed1afb082e`. Commit `c82228c257` also carries the storage changes main made between `ed1afb082e` and `6b21d05645`. The map's manifests and the comparison tests were written before those changes reached the backend. Each failure is one of three things: a manifest entry or a recorded test value that predates them, a timing case that failed once under load, or a cause on this host. None is a difference in what the backend does.
 
 ## Why these checks are not in the repository
 
 Each check needs main's store code beside the new code. The tests read the checkout's path from `HERMES_STATE_ORACLE_TREE` and import its `hermes_state*` modules and gateway files; without it, every comparison case skips with "compares with the legacy store: set HERMES_STATE_ORACLE_TREE to a pinned main checkout". The SQL map's checker takes the same checkout as `--legacy`.
 
-After the stack lands, main has no `SessionDB` to compare with. Running the checks then means checking out an older commit beside the tree, which the repository's CI does not do. The map's manifests also name main's functions by path and statement position, so every storage change on main needs a hand edit to them, as the 42 failures below show.
+After the stack lands, main has no `SessionDB` to compare with. Running the checks then means checking out an older commit beside the tree, which the repository's CI does not do. The map's manifests also name main's functions by path and statement position, so every storage change on main needs a hand edit to them, as the 93 failures below show.
 
 ## The SQL map
 
@@ -33,7 +32,7 @@ The map is 17 JSON manifests, one per family (conversation, admissions, hosted r
 
 Each difference either fails or is a ruled exception. A ruled exception is a difference recorded in the manifest with a reason that says how main's behaviour holds.
 
-Against main at `6b21d05645`, the checker read 1,589 backend statements, 158 SQL-building functions and 1,697 statements in main's modules that the manifests name. Every backend statement has exactly one manifest entry; 156 of the 158 builders do.
+Against main at `6b21d05645`, the checker read 1,651 backend statements, 160 SQL-building functions and 1,697 statements in main's modules that the manifests name. No mapped pair differs in SQL text, bound values, transaction or builder text.
 
 ### Ruled exceptions (234)
 
@@ -65,88 +64,89 @@ The manifests list 44 statements on main that the backend does not take over, ea
 | Argument checks that stay in the caller | 4 |
 | Another database than `state.db` (the API response store, the kanban board) | 3 |
 
-### The 44 failures
+### The 93 failures
 
-Against main at `ed1afb082e` the checker reports only two failures. `row_size_sql` and `usage_sql` moved into the backend's `persistence/sqlite/gateway/_hosted_work.py` after the map left the tree, so no manifest names them; their syntax trees equal main's functions in `gateway/hosted_room_work_storage.py`.
+Every failure is a statement or builder the manifests do not pair yet:
 
-The other 42 are main's storage changes after `ed1afb082e`: 29 statements on main that no manifest maps, and 13 mapped entries whose text, bound values, transaction, statement count or builder now differ.
+- 58 backend statements and 4 SQL-building functions with no manifest entry;
+- 29 statements on main that no manifest maps;
+- 2 entries whose statement count differs, because main's `upsert_room_link_record` and `disband_room` gained statements (4 against 3, and 5 against 3).
 
-| Change on main after `ed1afb082e` | Failures |
-|---|---|
-| Hosted rooms owe and hold grant revokes for room links; a disband waits for held grants | 31 |
-| A deliberate archive retires the Bot Chat and frees its title; the bulk archive spares it | 6 |
-| Group rooms: a continued discussion, an indeterminate peer attempt | 4 |
-| The schema's first run marks the stored-refusal repair as done | 1 |
+Each of the 58 statements and 4 builders has its counterpart on main at `6b21d05645`:
+
+| Backend code without a manifest entry | Statements | Main's code it follows |
+|---|---|---|
+| Owed and held grant revokes, room link retirement, dropping a remote run receipt | 22 | `gateway/hosted_rooms.py` |
+| The stored-refusal repair | 16, plus 2 builders | `hermes_state_legacy_refusal.py` |
+| Router call claims | 4 | `tui_gateway/hosted_room_router_call.py` |
+| Room member homes | 4 | `gateway/session_hosted_member_homes.py` |
+| Keeping a refused turn for display | 3 | `hermes_state_rewind.py` |
+| Retiring the canonical Bot Chat's title on archive | 3 | `hermes_state_titles.py` |
+| A group room's continued discussion | 3 | `gateway/hosted_room_policy_checkpoint.py` |
+| Clearing a session's messages | 2 | `SessionDB.clear_messages` in `hermes_state_messages.py` |
+| An indeterminate peer attempt | 1 | `gateway/hosted_room_driver.py` |
+| `row_size_sql` and `usage_sql` | 2 builders | `gateway/hosted_room_work_storage.py` |
+
+The 29 unmapped statements on main are the other side of the same changes: grant revokes and link retirement (22), the continued discussion (3), the disband's two new statements (2), dropping a remote run receipt (1) and the indeterminate attempt (1). Without manifest entries the checker cannot compare these pairs; the comparison tests below cover the same verbs.
 
 ## The comparison tests
 
 A comparison test builds the same state in a backend store and in main's `SessionDB` or gateway module. It runs the backend operation and main's method, then compares the return value, the raised error, and the rows each leaves in the database. Some tests compare a function the backend copies from main with main's function, text for text. The upgrade tests open stores written by older releases and compare the migrated files.
 
-The restored files are 35 whole files and 32 files that gained comparison cases beside cases that run on their own. Together they hold 2,713 cases. Without main's checkout, 2,253 skip: 2,252 comparison cases and one Linux-only case that skips on macOS either way. The other 460 run either way.
+The restored files are 35 whole files and 32 files that gained comparison cases beside cases that run on their own. Together they hold 2,714 cases. Without main's checkout, 2,254 skip: 2,253 comparison cases and one Linux-only case that skips on macOS either way. One of the 2,253 is a test of PR 2's own that sits in a restored file whose setup imports main's module. The other 460 run either way.
 
 | Family | Files | Cases | Passed | Failed | Skipped | Skipped without main |
 |---|---|---|---|---|---|---|
 | admin | 3 | 74 | 70 | 3 | 1 | 61 |
 | authority | 14 | 736 | 736 | 0 | 0 | 570 |
-| conversation | 13 | 839 | 834 | 5 | 0 | 747 |
+| conversation | 13 | 839 | 828 | 11 | 0 | 747 |
 | core | 2 | 168 | 167 | 1 | 0 | 161 |
 | gateway | 2 | 32 | 32 | 0 | 0 | 30 |
-| hosted rooms | 12 | 224 | 221 | 3 | 0 | 208 |
+| hosted rooms | 12 | 225 | 223 | 2 | 0 | 209 |
 | housekeeping | 5 | 130 | 130 | 0 | 0 | 125 |
 | SQL map checker | 6 | 94 | 94 | 0 | 0 | 0 |
-| upgrade | 1 | 224 | 222 | 2 | 0 | 224 |
+| upgrade | 1 | 224 | 224 | 0 | 0 | 224 |
 | workers | 8 | 191 | 190 | 1 | 0 | 127 |
 | logger names | 1 | 1 | 1 | 0 | 0 | 0 |
-| Total | 67 | 2,713 | 2,697 | 15 | 1 | 2,253 |
+| Total | 67 | 2,714 | 2,695 | 18 | 1 | 2,254 |
 
 The SQL map checker's 94 tests run the checker on small fixture trees and need no checkout of main.
 
-### The 15 failed cases
+### The 18 failed cases
 
-Each failed case also fails when its file runs alone. Rerun with main at `ed1afb082e` as the comparison tree, 11 of them pass:
+Each failed file was rerun alone, and 17 cases failed again. The lock-wait case `conversation/test_writer_read_lock_wait.py::test_insights_on_a_writer_store_wait_one_second_as_main` passed: it times a one-second wait and failed once while the full set ran beside other jobs.
 
-| Failed cases | What differs, and the change on main behind it |
-|---|---|
-| `conversation/test_store_parity.py`: `test_copy_matches_legacy` for `sessions.set_session_archived`, `titles._resolve_title_conflict`, `titles.get_session_by_title` and `titles.resolve_session_by_title` (4) | The copied functions' text. On main a deliberate archive retires the Bot Chat and frees its title, and title conflicts read `auto_archived`. |
-| `core/test_schema_parity.py`: `test_method_source_equals_m1[SessionSchemaMixin._init_schema]` (1) | The schema step's text. Main's version marks the stored-refusal repair as done. |
-| `hosted/test_placement.py`: `test_each_verb_creates_the_tables_its_m1_operation_creates`, profile and shared (2), and `test_the_first_shared_open_imports_the_pre_isolation_rooms_like_m1` (1) | Main creates `hosted_room_owed_revokes` and `hosted_room_revoked_grants` for grant revokes. |
-| `upgrade/test_upgrade_rollback.py`: `test_first_open_migrates_like_m1`, backend-absent and backend-jsonl_converted (2) | Main's `state_meta` has a `legacy_refusal_repair` row from the stored-refusal repair. |
-| `workers/test_worker_verbs.py`: `test_verb_matches_m1[compression_lineage_view]` (1) | Main's worker receipt carries a `tool_root` field, the tool-rotation root for managed workers. |
-
-The other 4 fail with either comparison tree, and the cause is this host:
+13 cases fail on a value the test recorded before the backend took main's later changes:
 
 | Failed cases | What differs |
 |---|---|
-| `admin/test_maintenance_parity.py`: `test_auto_maintenance_vacuums_through_the_writer_it_holds_like_the_legacy_pass`, alone and beside-a-sibling-handle (2) | Main's pass skips the VACUUM. |
+| `conversation/test_store_parity.py`: `test_copy_matches_legacy` for `sessions.set_session_archived`, `titles._resolve_title_conflict`, `titles.get_session_by_title` and `titles.resolve_session_by_title` (4) | Comments and docstrings in the copied functions are reworded. One call is written as `_retire_canonical_bot_chat_in_transaction(holder, conn, session_id)`, a module function in the backend where main calls a method. The statements and their order are main's. |
+| `core/test_schema_parity.py`: `test_method_source_equals_m1[SessionSchemaMixin._init_schema]` (1) | The schema step adds an import of the stored-refusal repair from the backend's own module; the rest of the text is main's. |
+| `conversation/test_store_parity.py`: `test_every_store_module_has_a_spec` and `test_module_defines_only_its_copies` for compression, messages, rewind and titles (5) | The test's list of copies per store module lacks the new module `legacy_refusal` and the new functions `get_tool_rotation_root`, `clear_messages`, `retain_refused_turn_for_display`, `_plan_refused_retention`, `_retire_canonical_bot_chat_in_transaction` and `bot_chat_title_released`. |
+| `hosted/test_placement.py`: `test_each_verb_creates_the_tables_its_m1_operation_creates`, profile and shared (2) | Both stores create the same tables. The test's fixed list of hosted-room tables lacks `hosted_room_owed_revokes`. |
+| `workers/test_worker_verbs.py`: `test_verb_matches_m1[compression_lineage_view]` (1) | The case's projection of the backend's answer leaves out `tool_root`, which main's worker receipt and the backend's answer both carry. |
+
+The 5 cases on the lists of copies need no checkout of main, so they are also the 5 failures of the run without main's store.
+
+The other 4 fail because of this host:
+
+| Failed cases | What differs |
+|---|---|
+| `admin/test_maintenance_parity.py`: `test_auto_maintenance_vacuums_through_the_writer_it_holds_like_the_legacy_pass`, alone and beside-a-sibling-handle (2) | One side's pass skips the VACUUM. |
 | `admin/test_maintenance_parity.py`: `test_optimize_fts_storage_rewrites_a_legacy_layout_like_the_legacy_store` (1) | The backend skips the VACUUM after the rewrite (`vacuum_skipped: in_use`). |
-| `conversation/test_search_storage.py`: `test_rebuild_returns_m1s_count_and_keeps_layout_3` (1) | The backend's rebuild returns 0 where main's returns 2. |
+| `conversation/test_search_storage.py`: `test_rebuild_returns_m1s_count_and_keeps_layout_3` (1) | The backend's rebuild is skipped and returns 0 where main's returns 2. |
 
-Before a VACUUM or an index rebuild, both stores scan the other processes on the machine for open handles on the database. On macOS the scan lists each process's open files and resolves their paths. This Mac runs other agents whose processes hold files under the real Hermes home, and the test suite's guard against touching that home raises inside the scan. Both stores read a failed scan as "a foreign holder may exist" and skip the step. The test log carries the warning ("Could not prove state.db has no foreign holders; deferring structural maintenance: TEST BUG: file I/O against the REAL hermes home"). Whether a scan fails depends on what the other processes hold at that moment, so the side that skips varies between runs. Both stores run the same scan code. On a host where no other process holds files under the Hermes home, such as a CI runner, the scan finds nothing.
-
-### With main's later storage changes applied
-
-The three stack commits that bring main's storage changes into the backend end at commit `d8f2786796`. The same files were restored on it as commit `91b5a7fd0d`. There the SQL map reports no mapped statement whose text, bound values or transaction differ. Its 91 failures are coverage bookkeeping, because the manifests were not updated for those commits:
-
-- 56 new backend statements and 4 new builders with no manifest entry;
-- the 29 statements on main still unmapped;
-- 2 entries whose statement count no longer matches.
-
-On that tree the comparison tests give 2,694 passed, 18 failed and 1 skipped. The upgrade cases pass and the 4 host failures remain. Two lock-wait cases in `conversation/test_writer_read_lock_wait.py` failed once and passed when their file ran alone. The other 12 fail on text or constants the tests recorded before those commits:
-
-- 5 copied functions whose text now differs from main's;
-- 4 checks of each store module's list of copies;
-- 2 checks against a fixed list of hosted-room tables;
-- 1 projection of the worker's lineage answer that leaves out `tool_root`.
+Before a VACUUM or an index rebuild, both stores scan the other processes on the machine for open handles on the database. On macOS the scan lists each process's open files and resolves their paths. This Mac runs other agents whose processes hold files under the real Hermes home, and the test suite's guard against touching that home raises inside the scan. Both stores read a failed scan as "a foreign holder may exist" and skip the step. The logs of both files carry the warning "Could not prove state.db has no foreign holders; deferring structural maintenance: TEST BUG: file I/O against the REAL hermes home". Whether a scan fails depends on what the other processes hold at that moment, so the side that skips varies between runs. Both stores run the same scan code. On a host where no other process holds files under the Hermes home, such as a CI runner, the scan finds nothing.
 
 ## How to rerun
 
-You need a hermes-agent clone that has commit `6d0a170c4b`. The commands run in the repository's test environment, which `scripts/run-in-hermes-env` provisions.
+You need a hermes-agent clone that has commit `fae2950770`. The commands run in the repository's test environment, which `scripts/run-in-hermes-env` provisions.
 
 1. Put main and the restored tree side by side:
 
    ```bash
    git worktree add ../hermes-main 6b21d0564de0492e2ebd0d8f63fca86c03b5c892
-   git worktree add ../hermes-compare 6d0a170c4b
+   git worktree add ../hermes-compare fae2950770
    cd ../hermes-compare
    ```
 
@@ -159,7 +159,7 @@ You need a hermes-agent clone that has commit `6d0a170c4b`. The commands run in 
 3. List the restored test files:
 
    ```bash
-   git diff --name-only 0a485905ed 6d0a170c4b -- tests | grep '/test_[^/]*\.py$' > ../compare-files.txt
+   git diff --name-only c82228c257 fae2950770 -- tests | grep '/test_[^/]*\.py$' > ../compare-files.txt
    ```
 
 4. Run them with main's store. `scripts/run_tests.sh` does not forward `HERMES_STATE_ORACLE_TREE`, so call the per-file runner it wraps, with the same clean environment and an absolute path:
@@ -179,4 +179,4 @@ You need a hermes-agent clone that has commit `6d0a170c4b`. The commands run in 
    scripts/run_tests.sh $(cat ../compare-files.txt)
    ```
 
-To compare with another commit of main, check that commit out as `../hermes-main`. The failures against main at `ed1afb082e` above come from the same commands with `ed1afb082eb3e46cf2edae9d8f68fb67b09ee4df` in step 1.
+To compare with another commit of main, check that commit out as `../hermes-main` in step 1.
