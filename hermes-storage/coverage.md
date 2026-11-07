@@ -8,6 +8,8 @@ This table maps every public method of `SessionDB` on main (commit `ed1afb082e`,
 
 Operations are written `Repository.operation`; every name exists in this pull request's `persistence/` package. Call sites link to main. A method that runs a sequence of operations today (a throttled maintenance pass, an adoption across two profiles) lists the operations the sequence calls, and the note says where the sequence runs.
 
+The [comparison with main's store](compare.html) reports how closely the replacements match main: the SQL map of every statement and the tests that run each operation on both stores.
+
 ## `SessionDB` methods
 
 ### Sessions (66)
