@@ -1,0 +1,389 @@
+Agent copy of [the page](index.html), built from the same parts and facts; read this instead of the HTML.
+
+# Black-box tests and battery: the storage refactor, before and after the merge
+
+To pin and match database behaviour on main after a refactor of 760 non-test files (+65,172 / -39,576 lines) onto the new persistence stack, we designed black-box tests and a power-user battery.
+
+Compared main before the merge `065f5abbb3` and after it `9dbaa77c4c`.
+
+**The refactor is stable and existing data is intact.** Turn times hold within the limit at the median; opening and paging a session are about 1 ms slower at the median, and a fix for most of that is merged (not re-measured).
+
+*Results at a glance*
+
+### Black-box tests
+
+830 cases in 20 groups
+
+0 broke after the merge
+
+749 and 750 passes before the merge, run 1 and run 2
+
+750 and 747 passes after the merge, run 1 and run 2; the spread is the same four flaky tests that also fail before the merge
+
+### Battery: scripted model
+
+12.1 GB real store copy; 12 scenarios, 96 minutes, 2 runs per tree
+
+0 of 684,892 old rows changed unexpectedly
+
+83 and 83 failed events before and after the merge, two runs each, most planned (a job built to fail, a killed turn)
+
++0.8 to 1.7 ms open and page, median
+
+### Battery: real models
+
+Claude Haiku / `gpt-5.6-luna`
+
+0 store errors
+
+31 and 32 failed events before and after the merge (pressure stage), none from the store
+
+56 of 56 delegation waves completed
+
+CI's unit and contract suites and lint pass on the six PRs, but none compares the two trees from outside, and the end-to-end lanes are off on pull requests by CI policy.
+
+*Black-box tests*
+
+## No black-box case broke after the merge
+
+We mapped the paths to the database that a code graph and a traced run of the whole test suite could find: 7,056 entry points, then 409 planned tests, then 136 files and 830 cases after the merge. Cases are grouped by the surface a user touches and never call the storage layer, so either tree can be swapped in.
+
+Beyond pass or fail, every case records what Hermes left behind (store dumps, logs, terminal screens, process arguments), and the compare reads those on both trees. During development the tests ran against the refactor and caught behaviour differences that were fixed before the merge (B2).
+
+- **0 of 830 cases broke** after the merge.
+- **4 cases vary** between runs: 2 on both trees, 1 only before the merge, 1 only after.
+- **79 fail every run on both trees,** so already failing on main before the merge; causes not read.
+- **781 of 830 record some difference** in what they left behind. The largest is one expected change (in 726, a set of tables now created on first use instead of at start) plus per-tree folder paths (216 of 216 differing process arguments); row contents differ in 61 cases and logs or screens in more, all grouped, not yet read one by one.
+
+B1
+
+**Figure f-b1: Black-box tests: outcome per group, before and after the merge**
+
+One row per group of external surfaces; for each tree, its cases split into passed in both runs, failed in both runs, and varied between its two runs. Pass-both counts match in 19 of 20 groups; the rest differ by one case that varies between runs. The 79 cases that fail every run fail on both trees.
+
+State `all`:
+
+| group | cases | before: pass both runs | before: fail both | before: vary | after: pass both runs | after: fail both | after: vary |
+|---|---|---|---|---|---|---|---|
+| CLI chat and entry points | 42 | 42 | 0 | 0 | 42 | 0 | 0 |
+| CLI slash controls | 44 | 36 | 8 | 0 | 36 | 8 | 0 |
+| Session management (list, title, retire, filter) | 32 | 28 | 4 | 0 | 28 | 4 | 0 |
+| Store held by another process, or absent | 10 | 10 | 0 | 0 | 10 | 0 | 0 |
+| Maintenance, backup, recovery | 44 | 44 | 0 | 0 | 44 | 0 | 0 |
+| Readers, approvals, telemetry | 14 | 14 | 0 | 0 | 14 | 0 | 0 |
+| Profiles | 34 | 22 | 10 | 2 | 22 | 10 | 2 |
+| Kanban | 58 | 56 | 2 | 0 | 56 | 2 | 0 |
+| Cron and scheduler | 18 | 18 | 0 | 0 | 18 | 0 | 0 |
+| TUI | 50 | 46 | 4 | 0 | 46 | 4 | 0 |
+| Messaging platforms (Telegram, Slack, Discord) | 122 | 114 | 8 | 0 | 114 | 8 | 0 |
+| Gateway lifecycle and webhooks | 42 | 28 | 14 | 0 | 28 | 14 | 0 |
+| Desktop JSON-RPC | 70 | 64 | 6 | 0 | 64 | 6 | 0 |
+| HTTP API and runs | 84 | 84 | 0 | 0 | 84 | 0 | 0 |
+| Dashboard | 88 | 88 | 0 | 0 | 88 | 0 | 0 |
+| Hosted rooms | 14 | 12 | 2 | 0 | 12 | 2 | 0 |
+| ACP and MCP | 12 | 6 | 6 | 0 | 6 | 6 | 0 |
+| Agent tools, delegation, workers | 28 | 16 | 12 | 0 | 15 | 12 | 1 |
+| Plugins and memory providers | 8 | 4 | 3 | 1 | 4 | 4 | 0 |
+| Dev and update tooling | 16 | 16 | 0 | 0 | 16 | 0 | 0 |
+
+Readout (`all`): Before the merge: 748 pass both runs, 79 fail both, 3 vary. After: 747, 80, 3. The one case that moves from vary to fail both (a memory provider keeping its offline queue across a restart) also failed one run before the merge; one case (a gateway stop during a kanban reclaim) failed one after-merge run, and a repro refuses the same way on main before the merge.
+
+B2
+
+**Figure f-b2: Black-box tests during development, before the merge: differences found at an earlier development head**
+
+Cases showing each difference at an earlier development head of the refactor, and at the final development head after the fixes. Development time, before the merge; not a comparison of main before and after. Three of eleven differences found at that head were gone at the final development head; the rest were intended or smaller stored differences.
+
+State `all`:
+
+| difference | cases at an earlier development head (of 826) | cases at the final development head |
+|---|---|---|
+| Gateway automatic archive and prune never ran | 560 | 0 |
+| Delegated child lost a delegation marker | 20 | 0 |
+| Stored model settings: key order changed | 14 | 0 |
+
+Readout (`all`): Earlier development head: 560, 20 and 14 of 826 cases; final development head: 0 for each, in two runs.
+
+Black-box results recounted per case; development-time compare results.
+
+*Battery: scripted model*
+
+## Existing data intact under load; open and page about 1 ms slower
+
+12 power-user scenarios ramp from 2 to 11 at once across six stages (S1 warm-up to S6 cool-down) on a copy of a real 12.1 GB store. A scripted model makes both trees do identical work, so model behaviour cannot cause a difference.
+
+- **Existing data intact:** 0 unexpected changes in 684,892 old rows; integrity checks clean on every run.
+- **Failed events level:** 83 per tree over two runs, almost all planned. One was the store refusing a prompt during a 20 s write stall in one after-merge run, traced to the test machine freezing; a forced repro refuses the same hold on both trees.
+- **Turn time within the limit:** medians at most x1.14 in any stage.
+- **Opening and paging a session are 0.8 to 1.7 ms slower** at the median (x1.15 to x1.37 in S1 to S5); list and search within 13%. A fix for most of it merged on 18 November, [PR #157379](https://github.com/NousResearch/hermes-agent/pull/157379), not re-measured.
+
+SM1
+
+**Figure f-s1: Battery: scripted model: which scenarios run in which stage**
+
+Twelve power-user scenarios (rows) across the six stages of one run (columns), with how many run at once. The load ramps from 2 scenarios at once to 11, with maintenance under load in the fifth stage.
+
+State `plan`:
+
+| stage | name | minutes | scenarios at once | scenarios |
+|---|---|---|---|---|
+| S1 | warm-up | 10 | 2 | W5, W7 |
+| S2 | normal day | 20 | 6 | W1, W3, W4, W6, W7, W8 |
+| S3 | pressure | 30 | 10 | W1, W2, W3, W4, W5, W6, W7, W8, W9, W10 |
+| S4 | burst | 15 | 11 | W1, W2, W3, W4, W5, W6, W7, W8, W9, W10, W11 |
+| S5 | maintenance | 15 | 11 | W1, W2, W3, W4, W5, W6, W7, W8, W9, W10, W12 |
+| S6 | cool-down | 5 | 1 | W7 |
+
+Readout (`plan`): Stages S1 warm-up to S6 cool-down: S1 2 at once for 10 min, S2 6 at once for 20 min, S3 10 at once for 30 min, S4 11 at once for 15 min, S5 11 at once for 15 min, S6 1 at once for 5 min.
+
+Hover notes:
+
+- W1: Long build, two compressions, resume
+- W2: Delegation, 8 sub-agents at once
+- W3: PR review, read-only
+- W4: History search
+- W5: Tracker work through the desktop protocol
+- W6: Gateway with a Telegram stand-in
+- W7: Desktop client polling
+- W8: Cron, four jobs, one failing
+- W9: Lifecycle, SIGKILL mid-turn
+- W10: Second profile on one gateway
+- W11: Kanban workers
+- W12: Maintenance under load
+
+SM2
+
+**Figure f-s2: Battery: scripted model: median probe read over each whole run**
+
+A probe reads the store every few seconds (list, open, page, search) throughout each run; the line is the median read per 30 s, before and after overlaid, run 1 above run 2. Shading marks the stages; the bars under each panel are the maintenance scenario's steps per tree; the strip below is the session count in the store. The after-merge line sits a few milliseconds above the before line through most of each run; probe gaps fall only in the maintenance stage, on both trees.
+
+State `stages`:
+
+| run | stage | before median ms | after median ms | before 95th ms | after 95th ms |
+|---|---|---|---|---|---|
+| run 1 | S1 | 18.76 | 22.51 | 157.07 | 175.94 |
+| run 1 | S2 | 21.0 | 25.2 | 175.49 | 195.34 |
+| run 1 | S3 | 28.1 | 34.34 | 229.21 | 228.23 |
+| run 1 | S4 | 28.37 | 31.07 | 184.43 | 170.98 |
+| run 1 | S5 | 33.88 | 36.83 | 202.79 | 212.83 |
+| run 1 | S6 | 32.27 | 30.34 | 182.12 | 147.01 |
+| run 2 | S1 | 17.46 | 22.34 | 153.64 | 152.14 |
+| run 2 | S2 | 19.17 | 22.84 | 150.38 | 145.64 |
+| run 2 | S3 | 22.0 | 25.95 | 163.16 | 157.73 |
+| run 2 | S4 | 26.21 | 32.12 | 161.91 | 160.59 |
+| run 2 | S5 | 28.4 | 31.35 | 170.79 | 163.93 |
+| run 2 | S6 | 7.67 | 30.08 | 147.62 | 146.14 |
+
+Readout (`stages`): Probe gaps over 5 s, all in the maintenance stage: after the merge, run 2, 57.0 s and 22.5 s while the test machine froze; before the merge, run 1, 14.3 s and 6.4 s. Runs 1 after and 2 before have none. Run 2's cool-down value before the merge mixes read kinds differently; every kind is faster after in that stage (SM3).
+
+SM3
+
+**Figure f-s3: Battery: scripted model: speed per read kind and stage**
+
+One panel per kind of read, stages S1 warm-up to S6 cool-down, each on its own linear scale. Each bar is a tree's median (mean of its two runs), the whisker its 95th percentile, the dots each run's own median. The dashed tick marks 1.2 times the before-merge median. Opening a session (S1 to S5) and paging (S1 to S3) are the only reads over the 1.2x limit, 1.0 to 1.7 ms slower; list, search and turn time stay inside it at the median.
+
+State `all`:
+
+| read | stage | before median ms | after median ms | before 95th ms | after 95th ms | after / before (median) | before run 1 | before run 2 | after run 1 | after run 2 |
+|---|---|---|---|---|---|---|---|---|---|---|
+| Session list | S1 | 32.6 | 35.9 | 41.9 | 45.8 | 1.1 | 33.54 | 31.72 | 38.67 | 33.2 |
+| Session list | S2 | 37.0 | 41.7 | 51.3 | 56.0 | 1.13 | 41.31 | 32.62 | 47.67 | 35.76 |
+| Session list | S3 | 49.3 | 51.9 | 71.0 | 70.9 | 1.05 | 58.27 | 40.36 | 61.37 | 42.5 |
+| Session list | S4 | 47.6 | 50.0 | 68.4 | 69.2 | 1.05 | 53.38 | 41.89 | 52.45 | 47.55 |
+| Session list | S5 | 56.6 | 57.1 | 80.4 | 80.3 | 1.01 | 64.24 | 48.87 | 67.79 | 46.5 |
+| Session list | S6 | 51.2 | 43.1 | 59.3 | 50.3 | 0.84 | 58.17 | 44.33 | 46.17 | 39.94 |
+| Open a session | S1 | 3.9 | 5.2 | 5.5 | 7.1 | 1.33 | 4.08 | 3.69 | 5.58 | 4.79 |
+| Open a session | S2 | 4.3 | 6.0 | 6.7 | 8.7 | 1.37 | 4.94 | 3.75 | 6.83 | 5.07 |
+| Open a session | S3 | 5.2 | 6.7 | 8.4 | 10.6 | 1.28 | 6.25 | 4.17 | 8.03 | 5.28 |
+| Open a session | S4 | 4.3 | 5.4 | 6.9 | 8.7 | 1.27 | 4.93 | 3.61 | 5.79 | 5.09 |
+| Open a session | S5 | 4.7 | 5.7 | 6.9 | 8.6 | 1.21 | 5.58 | 3.91 | 7.04 | 4.43 |
+| Open a session | S6 | 4.0 | 3.8 | 5.2 | 4.9 | 0.94 | 4.82 | 3.28 | 4.29 | 3.32 |
+| One page of messages | S1 | 4.7 | 6.2 | 7.4 | 8.9 | 1.32 | 4.82 | 4.58 | 6.69 | 5.71 |
+| One page of messages | S2 | 5.9 | 7.6 | 9.8 | 11.9 | 1.29 | 6.64 | 5.15 | 8.65 | 6.51 |
+| One page of messages | S3 | 6.2 | 7.6 | 11.0 | 12.9 | 1.22 | 7.48 | 4.98 | 8.93 | 6.22 |
+| One page of messages | S4 | 5.1 | 6.1 | 8.9 | 10.2 | 1.19 | 5.86 | 4.42 | 6.55 | 5.71 |
+| One page of messages | S5 | 5.7 | 6.5 | 9.8 | 10.6 | 1.15 | 6.64 | 4.68 | 7.92 | 5.1 |
+| One page of messages | S6 | 4.6 | 4.2 | 6.7 | 5.6 | 0.91 | 5.53 | 3.72 | 4.86 | 3.59 |
+| Search | S1 | 57.2 | 63.3 | 453.6 | 484.6 | 1.11 | 62.47 | 51.99 | 70.99 | 55.6 |
+| Search | S2 | 63.3 | 70.6 | 488.8 | 511.9 | 1.11 | 70.78 | 55.8 | 79.69 | 61.44 |
+| Search | S3 | 77.1 | 83.8 | 562.3 | 570.7 | 1.09 | 89.31 | 64.89 | 98.12 | 69.46 |
+| Search | S4 | 70.8 | 73.4 | 475.8 | 480.0 | 1.04 | 80.48 | 61.02 | 76.91 | 69.93 |
+| Search | S5 | 80.0 | 80.7 | 538.8 | 528.0 | 1.01 | 87.96 | 72.14 | 92.04 | 69.33 |
+| Search | S6 | 69.6 | 59.0 | 513.3 | 431.5 | 0.85 | 78.43 | 60.86 | 65.93 | 52.16 |
+| Turn time | S1 | 505.4 | 532.9 | 2052.5 | 2059.8 | 1.05 | 363.0 | 647.74 | 408.44 | 657.28 |
+| Turn time | S2 | 745.4 | 848.4 | 18034.2 | 18059.4 | 1.14 | 720.85 | 769.97 | 897.22 | 799.67 |
+| Turn time | S3 | 497.6 | 517.1 | 10533.7 | 10588.3 | 1.04 | 601.96 | 393.29 | 621.53 | 412.73 |
+| Turn time | S4 | 451.4 | 453.9 | 19217.3 | 24705.3 | 1.01 | 523.62 | 379.12 | 510.05 | 397.75 |
+| Turn time | S5 | 495.9 | 502.6 | 10600.6 | 11125.6 | 1.01 | 572.25 | 419.57 | 603.02 | 402.21 |
+| Turn time | S6 | 2004.6 | 2014.5 | 2341.6 | 2297.9 | 1.0 | 2004.39 | 2004.87 | 2006.1 | 2022.98 |
+
+Readout (`all`): Medians after over before, stages S1 to S5: open and page x1.15 to x1.37 (+0.8 to 1.7 ms); list and search within 13%; turn time at most x1.14. Among 95th percentiles, open (x1.25 to x1.30, S1 to S5), page (x1.21, S2) and turn time in S4 burst (x1.29) are over 1.2x; the turn-time one falls on the first two kanban workers, which wait for the scheduler's next tick on both trees.
+
+SM4
+
+**Figure f-s4: Battery: scripted model: events per scenario, before and after the merge**
+
+One row per scenario: driver events that completed (turns, reads, renames, cron runs) over both runs of each tree, and the failed events by cause. Failures are level per scenario; nearly all are planned.
+
+State `all`:
+
+| code | scenario | before: ok | before: failed | before: failed, why | after: ok | after: failed | after: failed, why |
+|---|---|---|---|---|---|---|---|
+| W1 | Long build, two compressions, resume | 564 | 0 | none | 604 | 0 | none |
+| W2 | Delegation, 8 sub-agents at once | 360 | 0 | none | 360 | 0 | none |
+| W3 | PR review, read-only | 981 | 0 | none | 972 | 0 | none |
+| W4 | History search | 706 | 3 | title rename refused as stale 3 | 711 | 1 | title rename refused as stale 1 |
+| W5 | Tracker work through the desktop protocol | 1,057 | 0 | none | 1,046 | 1 | prompt refused: storage unavailable 1 |
+| W6 | Gateway with a Telegram stand-in | 785 | 0 | none | 778 | 0 | none |
+| W7 | Desktop client polling | 11,736 | 0 | none | 11,641 | 0 | none |
+| W8 | Cron, four jobs, one failing | 719 | 78 | planned 78 | 720 | 79 | planned 79 |
+| W9 | Lifecycle, SIGKILL mid-turn | 3,838 | 2 | planned 2 | 3,803 | 2 | planned 2 |
+| W10 | Second profile on one gateway | 358 | 0 | none | 355 | 0 | none |
+| W11 | Kanban workers | 432 | 0 | none | 438 | 0 | none |
+| W12 | Maintenance under load | 20 | 0 | none | 25 | 0 | none |
+
+Readout (`all`): Events done over two runs: before 21,556, after 21,453. Failed: 83 each; planned 80 before and 81 after, title renames refused as stale 3 and 1, and one prompt refused during the stall after the merge.
+
+Battery run files, two runs per tree.
+
+*Battery: real models*
+
+## No store errors with real models; every delegation wave completed
+
+Real models exercise what the scripted one cannot: real tool choices and compressions, real 8-wide delegation fan-out (the scripted battery only imitates it), real turn timing. Claude Haiku runs the main loop, Codex `gpt-5.6-luna` the sub-agents. Each tree ran the pressure stage (S3), the 30-minute stage where every interactive scenario runs at once (10 scenarios); one more after-merge run covered all stages.
+
+- **0 store errors** on every run.
+- **56 of 56 delegation waves completed,** 448 sub-agent reports (12 waves before the merge, 44 after).
+- **Failed events 31 before, 32 after** in the pressure stage, none from the store.
+- **Speed within 20%:** read median x1.11, 95th x0.96; turn median x0.94, 95th x1.06; open and page about +0.5 ms.
+
+| Found in a first run | Fixed in the battery |
+|---|---|
+| Main model asked questions instead of delegating; the account refused the sub-agent model | A direct delegation prompt; a sub-agent model the account accepts |
+| Driver waited for a reply marker only the scripted model sends | Take the first bot reply |
+| A tool's own database error read as a store error | Tool output left out of the scan |
+| Agent log rotated mid-run | Logs kept with backups |
+
+Battery fixes only; no Hermes code changed.
+
+RM1
+
+**Figure f-r1: Battery: real models: every delegation wave**
+
+Each dot is one wave of eight sub-agents, placed by the seconds from the parent's request to the last report on disk; hollow dots are second waves that read the first wave's reports. All 56 waves finished with eight reports each.
+
+State `all`:
+
+| run | wave no. | seconds | reports |
+|---|---|---|---|
+| Before the merge, pressure stage | 1 | 98.1 | 8 of 8 |
+| Before the merge, pressure stage | 2 | 103.8 | 8 of 8 |
+| Before the merge, pressure stage | 3 | 86.9 | 8 of 8 |
+| Before the merge, pressure stage | 4 | 87.0 | 8 of 8 |
+| Before the merge, pressure stage | 5 | 70.3 | 8 of 8 |
+| Before the merge, pressure stage | 6 | 46.7 | 8 of 8 |
+| Before the merge, pressure stage | 7 | 88.9 | 8 of 8 |
+| Before the merge, pressure stage | 8 | 26.3 | 8 of 8 |
+| Before the merge, pressure stage | 9 | 121.2 | 8 of 8 |
+| Before the merge, pressure stage | 10 | 48.2 | 8 of 8 |
+| Before the merge, pressure stage | 11 | 100.3 | 8 of 8 |
+| Before the merge, pressure stage | 12 | 78.1 | 8 of 8 |
+| After the merge, pressure stage | 1 | 48.7 | 8 of 8 |
+| After the merge, pressure stage | 2 | 55.8 | 8 of 8 |
+| After the merge, pressure stage | 3 | 59.9 | 8 of 8 |
+| After the merge, pressure stage | 4 | 70.6 | 8 of 8 |
+| After the merge, pressure stage | 5 | 36.2 | 8 of 8 |
+| After the merge, pressure stage | 6 | 56.3 | 8 of 8 |
+| After the merge, pressure stage | 7 | 56.9 | 8 of 8 |
+| After the merge, pressure stage | 8 | 43.2 | 8 of 8 |
+| After the merge, pressure stage | 9 | 69.1 | 8 of 8 |
+| After the merge, pressure stage | 10 | 54.2 | 8 of 8 |
+| After the merge, pressure stage | 11 | 54.7 | 8 of 8 |
+| After the merge, pressure stage | 12 | 64.1 | 8 of 8 |
+| After the merge, pressure stage | 13 | 65.5 | 8 of 8 |
+| After the merge, pressure stage | 14 | 59.6 | 8 of 8 |
+| After the merge, all six stages | 1 | 99.7 | 8 of 8 |
+| After the merge, all six stages | 2 | 49.1 | 8 of 8 |
+| After the merge, all six stages | 3 | 51.2 | 8 of 8 |
+| After the merge, all six stages | 4 | 36.5 | 8 of 8 |
+| After the merge, all six stages | 5 | 55.7 | 8 of 8 |
+| After the merge, all six stages | 6 | 43.8 | 8 of 8 |
+| After the merge, all six stages | 7 | 58.9 | 8 of 8 |
+| After the merge, all six stages | 8 | 49.9 | 8 of 8 |
+| After the merge, all six stages | 9 | 61.9 | 8 of 8 |
+| After the merge, all six stages | 10 | 63.7 | 8 of 8 |
+| After the merge, all six stages | 11 | 53.3 | 8 of 8 |
+| After the merge, all six stages | 12 | 68.2 | 8 of 8 |
+| After the merge, all six stages | 13 | 61.2 | 8 of 8 |
+| After the merge, all six stages | 14 | 54.4 | 8 of 8 |
+| After the merge, all six stages | 15 | 75.8 | 8 of 8 |
+| After the merge, all six stages | 16 | 29.8 | 8 of 8 |
+| After the merge, all six stages | 17 | 56.2 | 8 of 8 |
+| After the merge, all six stages | 18 | 44.0 | 8 of 8 |
+| After the merge, all six stages | 19 | 59.6 | 8 of 8 |
+| After the merge, all six stages | 20 | 45.4 | 8 of 8 |
+| After the merge, all six stages | 21 | 75.6 | 8 of 8 |
+| After the merge, all six stages | 22 | 41.6 | 8 of 8 |
+| After the merge, all six stages | 23 | 60.0 | 8 of 8 |
+| After the merge, all six stages | 24 | 68.9 | 8 of 8 |
+| After the merge, all six stages | 25 | 45.6 | 8 of 8 |
+| After the merge, all six stages | 26 | 39.9 | 8 of 8 |
+| After the merge, all six stages | 27 | 51.9 | 8 of 8 |
+| After the merge, all six stages | 28 | 56.0 | 8 of 8 |
+| After the merge, all six stages | 29 | 59.1 | 8 of 8 |
+| After the merge, all six stages | 30 | 67.3 | 8 of 8 |
+
+Readout (`all`): Before the merge, pressure stage: 12 waves, median 87 s. After, pressure stage: 14 waves, median 57 s. After, all six stages: 30 waves, median 56 s. Wave times depend on the model service; not compared.
+
+RM2
+
+**Figure f-r2: Battery: real models: speed per read kind, pressure stage**
+
+One panel per kind of read, the pressure stage (S3, ten scenarios at once for 30 minutes), one run per tree, each panel on its own linear scale. Each bar is the median, the whisker the 95th percentile. The dashed tick marks 1.2 times the before-merge median. Every read kind and turn time stays inside the 1.2x limit at the median under real models.
+
+State `s3`:
+
+| read | before median ms | after median ms | before 95th ms | after 95th ms | after / before (median) | after minus before ms |
+|---|---|---|---|---|---|---|
+| Session list | 33.71 | 33.95 | 68.68 | 57.14 | 1.01 | 0.24 |
+| Open a session | 3.54 | 4.08 | 8.02 | 8.29 | 1.15 | 0.54 |
+| One page of messages | 4.76 | 5.28 | 9.91 | 9.94 | 1.11 | 0.52 |
+| Search | 63.59 | 62.35 | 453.14 | 456.05 | 0.98 | -1.24 |
+| Turn time | 3361.08 | 3154.3 | 31201.02 | 33042.58 | 0.94 | -206.78 |
+
+Readout (`s3`): All probe reads pooled: median x1.11, 95th x0.96. Turn time: median x0.94, 95th x1.06. Open and page about +0.5 ms at the median.
+
+RM3
+
+**Figure f-r3: Battery: real models: events per scenario, pressure stage, before and after the merge**
+
+One row per scenario that runs in the pressure stage (S3): driver events that completed and failed events by cause, one run per tree. No failure comes from the store: planned failures, turns cut off at the stage end, old sessions whose launch settings were frozen in the store copy, and clients that stopped waiting (4 before, 1 after).
+
+State `s3`:
+
+| code | scenario | before: ok | before: failed | before: failed, why | after: ok | after: failed | after: failed, why |
+|---|---|---|---|---|---|---|---|
+| W1 | Long build, two compressions, resume | 179 | 0 | none | 188 | 0 | none |
+| W2 | Delegation, 8 sub-agents at once | 36 | 0 | none | 42 | 0 | none |
+| W3 | PR review, read-only | 10 | 1 | cut off at stage end 1 | 12 | 2 | cut off at stage end 1, client timeout 1 |
+| W4 | History search | 108 | 12 | frozen launch settings in the store copy 12 | 117 | 16 | cut off at stage end 1, frozen launch settings in the store copy 15 |
+| W5 | Tracker work through the desktop protocol | 82 | 0 | none | 70 | 0 | none |
+| W6 | Gateway with a Telegram stand-in | 159 | 0 | none | 159 | 0 | none |
+| W7 | Desktop client polling | 939 | 0 | none | 957 | 0 | none |
+| W8 | Cron, four jobs, one failing | 135 | 14 | planned 14 | 135 | 14 | planned 14 |
+| W9 | Lifecycle, SIGKILL mid-turn | 466 | 0 | none | 505 | 0 | none |
+| W10 | Second profile on one gateway | 45 | 4 | client timeout 4 | 70 | 0 | none |
+
+Readout (`s3`): Events done: before 2,159, after 2,255. Failed: before 31, after 32, none from the store. The after-merge run over all six stages finished 6,058 events with 0 store errors.
+
+Battery run files.
+
+*Conclusion*
+
+## Same behaviour from outside, one small read cost mostly fixed
+
+From outside, main behaves the same after the merge: no black-box case broke, existing data is intact, and failures are level under both batteries. The one cost over the limit, a small slowdown opening and paging a session (list and search slowed within 13%), is mostly fixed by [PR #157379](https://github.com/NousResearch/hermes-agent/pull/157379).
+
+**Not covered:** catalog plugins (3 broke after the merge on imports the refactor removed, all fixed since on main), macOS and Windows, a battery run on a main that includes the read fix, and the recorded-output differences not yet read one by one.
+
+*Built 2026-11-20 12:44 CET from: black-box test results recounted per case, scripted-model battery run files (two runs per tree), real-model battery run files, development-time compare results, git reads of the hermes-agent repository. Pins: main before the merge 065f5abbb3, after 9dbaa77c4c. Files and GitHub read 2026-11-20 11:35 CET.*
