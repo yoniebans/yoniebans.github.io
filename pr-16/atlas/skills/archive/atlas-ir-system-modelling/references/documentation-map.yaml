@@ -1,0 +1,297 @@
+# Atlas IR Reference — Documentation Map Page
+#
+# This is the exhaustive reference for what a documentation-map page can express.
+# Nothing should be produced that doesn't align with this template.
+#
+# This page applies the Diátaxis framework to a specific system. It maps the
+# system's conceptual territory through four lenses — tutorials (learning),
+# how-to guides (goals), reference (information), explanation (understanding).
+#
+# Diátaxis identifies four fundamentally different documentation needs,
+# defined by two axes:
+#
+#   Action (doing) vs Cognition (knowing)
+#   Acquisition (study) vs Application (work)
+#
+#                    Acquisition          Application
+#                    (study)              (work)
+#   Action (doing)   TUTORIALS            HOW-TO GUIDES
+#   Cognition        EXPLANATION          REFERENCE
+#   (knowing)
+#
+# See https://diataxis.fr for canonical definitions.
+#
+# PURPOSE OF THIS PAGE: Not to catalogue all documentation that exists.
+# To orient the reader on how to THINK about the system — what mental models
+# apply, where to extend it, what design principles shaped it, what reference
+# surfaces exist. Each quadrant answers a different question:
+#
+#   Tutorials:   "How would someone learn this system?"
+#   How-to:      "How does someone extend or operate this system?"
+#   Reference:   "What are the system's surfaces and contracts?"
+#   Explanation: "Why is the system the way it is?"
+#
+# The zoom principle applied to conceptual orientation:
+#   Landscape     → the four quadrants and what each covers (orientation)
+#   Quadrants     → the content within each quadrant (understanding)
+#   Cross-cutting → concerns that span quadrants (insight)
+#
+# WHEN TO INCLUDE THIS PAGE:
+# Only for systems complex enough that structure alone (C4 page) doesn't
+# convey understanding. If someone can read the C4 page and sequences page
+# and be fully oriented, this page isn't needed. Include when the system has:
+# - Non-obvious design principles that explain structural choices
+# - Extension points that someone needs to discover
+# - Mental models that aren't apparent from the diagrams
+# - Cross-cutting concerns that span multiple containers
+
+page:
+  type: documentation-map
+  subject: ""                         # the software system being documented
+
+# ─────────────────────────────────────────────
+# LANDSCAPE (always present)
+# ─────────────────────────────────────────────
+# The orientation layer. Before diving into any quadrant, the reader sees
+# the territory — what this system's documentation landscape looks like
+# through the Diátaxis lens.
+#
+# This is the map. It tells the reader: "here are the four ways to engage
+# with this system's documentation, here's what each one covers for THIS
+# system specifically."
+#
+# Not every system has content in all four quadrants. A library might be
+# heavy on reference and light on tutorials. An orchestration system might
+# be heavy on how-to and explanation. The landscape describes what exists
+# and what's intentionally absent.
+
+landscape:
+  framing: ""                         # one-sentence mental model — the single idea that makes
+                                      # everything else click. If someone reads only this, they
+                                      # should be oriented.
+                                      # e.g. "Hermes is a loop: message in → think → act → respond.
+                                      # Everything else is configuration of that loop."
+  quadrant_summary:
+    tutorials: ""                     # what learning this system looks like — one sentence
+    how_to: ""                        # what extending/operating this system looks like — one sentence
+    reference: ""                     # what this system's surfaces and contracts are — one sentence
+    explanation: ""                   # what understanding this system's design requires — one sentence
+  gaps:                               # optional — quadrants intentionally light or empty
+    - quadrant: ""                    # tutorials | how_to | reference | explanation
+      reason: ""                      # why this quadrant is thin for this system
+
+# ─────────────────────────────────────────────
+# TUTORIALS QUADRANT (learning-oriented)
+# ─────────────────────────────────────────────
+# "How would someone learn this system?"
+#
+# Diátaxis says: a tutorial is a LESSON — learning by doing, under guidance.
+# The user acquires skills and confidence, not just knowledge.
+#
+# In atlas context, this quadrant doesn't contain full tutorials (those live
+# in the project's actual docs). It maps the LEARNING LANDSCAPE:
+# - What are the key things someone needs to learn?
+# - What's the recommended learning path?
+# - What does the system feel like when you're learning it?
+# - What are the foundational concepts that everything else builds on?
+#
+# MODELLING DECISIONS:
+# - What are the 3-5 foundational concepts someone must grasp?
+# - Is there a natural learning order, or can concepts be learned independently?
+# - What's the "hello world" equivalent for this system?
+
+tutorials:
+  learning_path:                      # the recommended order of learning
+    description: ""                   # how learning this system works — the journey shape
+    stages:
+      - name: ""                      # e.g. "First contact", "Basic configuration", "First extension"
+        learns: ""                    # what the learner acquires at this stage — skills, not facts
+        prerequisite: ""              # optional — what stage must come before this
+        entry_point: ""               # optional — where someone starts this stage (CLI command,
+                                      # config file, example project)
+  foundational_concepts:              # the concepts that, once grasped, make everything else tractable
+    - name: ""
+      description: ""                 # what this concept is, in domain terms
+      why_foundational: ""            # why understanding this is a prerequisite for the rest
+
+# ─────────────────────────────────────────────
+# HOW-TO QUADRANT (goal-oriented)
+# ─────────────────────────────────────────────
+# "How does someone extend or operate this system?"
+#
+# Diátaxis says: a how-to guide addresses a real-world goal for an
+# already-competent user. It's about WORK, not STUDY.
+#
+# In atlas context, this quadrant maps the EXTENSION AND OPERATION surfaces:
+# - Where is the system designed to be extended?
+# - What are the mechanisms (plugin, config, subclass, adapter)?
+# - What are the common operational tasks?
+# - What goals would a competent user have?
+#
+# This is where the system's intentional flexibility lives. Not aspirational —
+# actually built extension points.
+
+how_to:
+  extension_points:                   # where and how the system is designed to grow
+    - name: ""                        # e.g. "Custom Tools", "Platform Adapters", "Memory Providers"
+      mechanism: ""                   # plugin | config | subclass | adapter | hook | middleware |
+                                      # event-handler | decorator | convention
+      description: ""                 # what this extension point allows
+      contract: ""                    # what the extension must provide — interface, protocol,
+                                      # file convention, registration mechanism
+      complexity: ""                  # trivial | moderate | significant — how much effort to extend here
+      example: ""                     # optional — a concrete example of an existing extension
+                                      # that illustrates the pattern
+  operational_surfaces:               # common tasks a competent operator would perform
+    - name: ""                        # e.g. "Deploy to production", "Configure LLM providers",
+                                      #       "Debug message flow"
+      description: ""                 # what this task accomplishes
+      touches: []                     # which containers/components this task involves
+
+# ─────────────────────────────────────────────
+# REFERENCE QUADRANT (information-oriented)
+# ─────────────────────────────────────────────
+# "What are the system's surfaces and contracts?"
+#
+# Diátaxis says: reference is TECHNICAL DESCRIPTION — austere, authoritative,
+# neutral. You consult it, you don't read it. Its structure should mirror
+# the structure of the thing it describes.
+#
+# In atlas context, this quadrant maps the REFERENCE SURFACES:
+# - What APIs, CLIs, config schemas, file conventions exist?
+# - What are the key interfaces and contracts?
+# - What does the module/package map look like?
+#
+# This doesn't duplicate the actual reference docs — it maps where they are
+# and what they cover. The atlas is for orientation; the reference docs
+# themselves live elsewhere.
+
+reference:
+  surfaces:                           # the system's reference surfaces — what can be looked up
+    - name: ""                        # e.g. "CLI Interface", "Tool API", "Config Schema",
+                                      #       "Plugin Manifest Format"
+      surface_type: ""                # api | cli | config | schema | file-convention | protocol | sdk
+      description: ""                 # what this surface exposes
+      structure_mirrors: ""           # optional — what part of the codebase this reference mirrors
+                                      # (Diátaxis principle: reference structure should mirror
+                                      # the structure of the thing it describes)
+  module_map:                         # optional — the logical organisation of the codebase
+    description: ""                   # how the code is organised — the partitioning principle
+    modules:
+      - name: ""
+        responsibility: ""
+        public_surface: ""            # what this module exposes to consumers
+
+# ─────────────────────────────────────────────
+# EXPLANATION QUADRANT (understanding-oriented)
+# ─────────────────────────────────────────────
+# "Why is the system the way it is?"
+#
+# Diátaxis says: explanation is DISCURSIVE — it permits reflection, circles
+# around its subject, admits opinion. It answers "why?" and provides context.
+# It's what you read "in the bath" — away from the work, thinking about it.
+#
+# In atlas context, this quadrant maps the DESIGN RATIONALE:
+# - What design principles shaped the architecture?
+# - What alternatives were considered and rejected?
+# - What trade-offs were made and why?
+# - What constraints influenced the design?
+#
+# This is the connective tissue. Without it, the structure (C4 page) and
+# behaviour (sequences page) are facts without meaning.
+
+explanation:
+  design_principles:                  # the principles that explain WHY the structure is what it is
+    - name: ""                        # concise name — "Prompt Cache Preservation",
+                                      #                 "Tools Over Agents", "Convention Over Config"
+      description: ""                 # what this principle means
+      implication: ""                 # what this principle causes in the architecture —
+                                      # the structural consequence that a reader can now trace
+      trade_off: ""                   # optional — what was given up to follow this principle
+
+  design_decisions:                   # key decisions that shaped the system — not full ADRs,
+                                      # but the headlines that help a reader understand WHY
+    - decision: ""                    # what was decided — "Use SQLite, not Postgres"
+      context: ""                     # what prompted the decision
+      alternatives_considered: []     # what else was evaluated
+      rationale: ""                   # why this choice was made
+
+  constraints:                        # external forces that shaped the design
+    - name: ""                        # e.g. "Token limits", "Single-process deployment",
+                                      #       "Offline-first requirement"
+      description: ""                 # what the constraint is
+      influence: ""                   # how it shaped the architecture
+
+# ─────────────────────────────────────────────
+# CROSS-CUTTING CONCERNS (optional)
+# ─────────────────────────────────────────────
+# Concerns that span multiple quadrants and multiple containers.
+# These don't fit neatly into one quadrant — they're the threads that
+# run through the whole system.
+#
+# Examples: error handling strategy, logging/observability approach,
+# security model, configuration philosophy, testing strategy.
+#
+# MODELLING DECISIONS:
+# - What concerns genuinely span the system vs are localised?
+# - Keep to 3-5. If everything is cross-cutting, the system lacks boundaries.
+# - Each concern should name which containers/components it touches.
+
+cross_cutting:
+  - name: ""                          # e.g. "Error Propagation", "Configuration Hierarchy",
+                                      #       "Token Budget Management"
+    description: ""                   # what this concern is and why it's cross-cutting
+    touches: []                       # which containers/components this concern affects
+    pattern: ""                       # how the system handles this concern — the invariant
+                                      # e.g. "All errors propagate as structured ToolError objects
+                                      # with category, message, and retry hint. No raw exceptions
+                                      # cross container boundaries."
+
+# ─────────────────────────────────────────────
+# QUALITY NOTES (optional)
+# ─────────────────────────────────────────────
+# Diátaxis distinguishes functional quality (accuracy, completeness,
+# consistency) from deep quality (flow, fit to human needs, anticipation).
+#
+# This section is for the modeller to note where the system's documentation
+# (or the atlas itself) has quality gaps — not to fix them here, but to
+# make them visible.
+#
+# Optional. Include when the modeller spots documentation debt worth flagging.
+
+quality_notes:
+  functional:                         # accuracy, completeness, consistency gaps
+    - ""
+  deep:                               # flow, fit, anticipation gaps
+    - ""
+
+# ─────────────────────────────────────────────
+# REFS
+# ─────────────────────────────────────────────
+
+refs:
+  "": { path: "", symbol: "" }
+
+# ─────────────────────────────────────────────
+# MODELLING NOTES
+# ─────────────────────────────────────────────
+# The agent's reasoning about documentation map modelling decisions. Not rendered.
+#
+# Examples:
+# - "Tutorials quadrant is thin — Hermes has no formal tutorial pathway yet.
+#    Noted as a gap. The learning path is reconstructed from how users actually
+#    onboard (start with CLI, then configure, then extend)."
+# - "Extension points are the richest quadrant — Hermes is designed to be
+#    extended at every layer (tools, adapters, memory providers, skills).
+#    This is the system's defining characteristic."
+# - "Design principles: identified 5. 'Prompt cache preservation' is the
+#    most architecturally significant — it explains why tool results are
+#    appended rather than inserted, why conversation structure is append-only."
+# - "Cross-cutting: error propagation and token budget management are the
+#    two concerns that genuinely span all containers. Config hierarchy is
+#    important but localised to the state layer."
+# - "Skipped module map — the C4 page's component diagrams already cover
+#    the logical code organisation. Including it here would duplicate."
+
+modelling_notes:
+  - ""

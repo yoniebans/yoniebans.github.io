@@ -1,0 +1,65 @@
+# Example daemon.yaml — atlas drift detection config
+#
+# One file per tracked project. Place at:
+#   /mnt/hermes/projects/<project>/daemon.yaml
+#
+# The structural scan and atlas linters read all config from here.
+# No hardcoded paths in the scripts.
+
+project: my-project                     # human-readable name
+
+repo:
+  path: /path/to/source/repo            # local clone of the codebase
+  remote: origin
+  branch: main
+  version_source: pyproject.toml        # file to grep for version string
+                                        # also supports: package.json, Cargo.toml,
+                                        # VERSION, RELEASE_*.md
+
+atlas:
+  path: /path/to/atlas/repo             # may differ from code repo
+  pages:                                # which HTML pages exist in the atlas
+    - index.html
+    - data-model.html
+    - sequence-diagrams.html
+    - diataxis.html
+  refs_js: refs.js                      # relative to atlas path
+
+detection:
+  baseline_ref: "abc123def456"          # last known-good commit SHA in code repo
+                                        # advanced after every drift PR
+  strategy: static-diff                 # only strategy currently implemented
+  # Directories under repo.path to ignore in the structural scan. Anything
+  # category-specific to your project belongs here — defaults are conservative
+  # (test/build artifacts only). Add things like "website", "skills",
+  # "optional-skills" if they're noise for your atlas.
+  exclude_dirs:
+    - tests
+    - test
+    - __pycache__
+    - node_modules
+    - .git
+
+linters:
+  # Words the cross-page number consistency linter cares about. Each entry is
+  # a noun that follows a quantified claim ("25+ platform adapters"). Override
+  # for your project's vocabulary — defaults below are hermes-agent-shaped.
+  version_nouns:
+    - tools
+    - adapters
+    - providers
+    - platforms
+    - tasks
+    - channels
+    - hooks
+    - sequences
+    - pages
+    - entry
+    - surfaces
+    - plugins
+    - categories
+    - models
+  # Regex that extracts the project's version string from the last 2000 bytes
+  # of every atlas page (footer area). The capture group is the version. Match
+  # the shape you actually use in footers — default matches "v1.2.3".
+  footer_version_pattern: 'v(\d+\.\d+\.\d+)'

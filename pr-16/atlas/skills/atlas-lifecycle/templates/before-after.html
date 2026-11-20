@@ -1,0 +1,273 @@
+<!--
+  Ad-hoc planning commons — BEFORE/AFTER template
+  See: yoniebans.github.io/atlas/skills/adhoc-planning-commons/SKILL.md
+
+  Two-state mode: same system shown today and as proposed, with a diff block.
+  Use when the question is "what changes if we do this?"
+
+  Replace all <REPLACE: …> placeholders. Keep the structure.
+  base/ loads live from yoniebans.github.io — no submodule needed.
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><REPLACE: Topic> — Planning Commons</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Fira+Code:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://yoniebans.github.io/styles.css">
+  <link rel="stylesheet" href="https://yoniebans.github.io/presentation.css">
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+  <script>mermaid.initialize({ startOnLoad: false, theme: 'dark', themeVariables: { primaryColor: '#1e293b', primaryTextColor: '#e2e8f0', lineColor: '#475569', secondaryColor: '#0f172a', tertiaryColor: '#1e293b' }});</script>
+  <script src="https://yoniebans.github.io/theme.js"></script>
+</head>
+<body>
+<div class="wrap">
+
+  <main class="main" style="max-width: 1100px; margin: 0 auto;">
+
+    <section id="overview">
+      <h1 class="anim" style="--i:0"><REPLACE: Topic title></h1>
+      <p class="subtitle anim" style="--i:1">Planning Commons &mdash; <REPLACE: YYYY-MM-DD> &mdash; <REPLACE: repo or scope></p>
+      <p class="lead anim" style="--i:2">
+        <REPLACE: One paragraph stating the single question this page answers, and the
+        mental model the reader should walk away with. Three sentences max.>
+      </p>
+
+      <div class="kpi-row anim" style="--i:3">
+        <div class="kpi-card">
+          <div class="kpi-card__value" style="color:var(--accent)"><REPLACE: N></div>
+          <div class="kpi-card__label"><REPLACE: KPI 1 label></div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-card__value" style="color:var(--teal)"><REPLACE: N></div>
+          <div class="kpi-card__label"><REPLACE: KPI 2 label></div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-card__value" style="color:var(--amber)"><REPLACE: N></div>
+          <div class="kpi-card__label"><REPLACE: KPI 3 label></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="scope">
+      <div class="callout anim" style="--i:4">
+        <strong>Out of scope for this page.</strong> <REPLACE: What this page is intentionally NOT
+        answering.>
+      </div>
+    </section>
+
+    <!-- ============================== -->
+    <!-- BEFORE                          -->
+    <!-- ============================== -->
+    <section id="before">
+      <div class="sec-head anim" style="--i:5; color:var(--accent)">
+        <span class="dot" style="background:var(--accent)"></span> Before &mdash; current shape
+      </div>
+      <h2 class="anim" style="--i:6"><REPLACE: One-line headline for the current state></h2>
+      <p class="section-desc anim" style="--i:7">
+        <REPLACE: One paragraph describing the system as it is today, what's notable about
+        the current shape, and what's painful or missing.>
+      </p>
+
+      <section class="diagram-shell anim" style="--i:8">
+        <p class="diagram-shell__hint">
+          Ctrl/Cmd + wheel to zoom &middot; Scroll to pan &middot; Drag when zoomed &middot; Double-click to fit
+        </p>
+        <div class="mermaid-wrap">
+          <div class="zoom-controls">
+            <button type="button" data-action="zoom-in" title="Zoom in">+</button>
+            <button type="button" data-action="zoom-out" title="Zoom out">&minus;</button>
+            <button type="button" data-action="zoom-fit" title="Smart fit">&#8634;</button>
+            <button type="button" data-action="zoom-one" title="1:1 zoom">1:1</button>
+            <button type="button" data-action="zoom-expand" title="Open full size">&#x26F6;</button>
+            <span class="zoom-label">Loading...</span>
+          </div>
+          <div class="mermaid-viewport">
+            <div class="mermaid mermaid-canvas"></div>
+          </div>
+        </div>
+        <script type="text/plain" class="diagram-source">
+          graph TD
+            <REPLACE: current-state nodes and edges>
+            a["Component A"]
+            b["Component B"]
+            c["Component C (problematic)"]
+            a --> b
+            b --> c
+
+            classDef stable fill:#0284c711,stroke:#0284c744,stroke-width:1.5px
+            classDef hot fill:#d9770622,stroke:#d97706,stroke-width:2px
+            class a,b stable
+            class c hot
+        </script>
+      </section>
+
+      <div class="grid-3 gap-24 anim" style="--i:9">
+        <div class="ve-card c-accent">
+          <div class="ve-card__label"><REPLACE: Component 1></div>
+          <ul class="node-list">
+            <li><code><REPLACE: path/file.py></code> — <REPLACE: what it does today></li>
+          </ul>
+        </div>
+        <div class="ve-card c-teal">
+          <div class="ve-card__label"><REPLACE: Component 2></div>
+          <ul class="node-list">
+            <li><code><REPLACE: path/file.py></code> — <REPLACE: what it does today></li>
+          </ul>
+        </div>
+        <div class="ve-card c-amber">
+          <div class="ve-card__label"><REPLACE: Component 3 (the painful one)></div>
+          <ul class="node-list">
+            <li><code><REPLACE: path/file.py></code> — <REPLACE: what's wrong></li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================== -->
+    <!-- PROPOSED CHANGE                 -->
+    <!-- ============================== -->
+    <section id="proposal">
+      <div class="sec-head anim" style="--i:10; color:var(--emerald)">
+        <span class="dot" style="background:var(--emerald)"></span> Proposed change
+      </div>
+
+      <div class="ve-card ve-card--hero c-emerald anim" style="--i:11; margin-bottom:20px">
+        <div class="ve-card__label" style="color:var(--emerald)">What we're changing and why</div>
+        <p style="font-size:14px;color:var(--text);line-height:1.6;margin-bottom:0">
+          <REPLACE: One short paragraph: the change in plain English, and the single reason it's
+          worth making. Save the implementation detail for the plan / spec — this is the elevator pitch.>
+        </p>
+      </div>
+    </section>
+
+    <!-- ============================== -->
+    <!-- AFTER                           -->
+    <!-- ============================== -->
+    <section id="after">
+      <div class="sec-head anim" style="--i:12; color:var(--emerald)">
+        <span class="dot" style="background:var(--emerald)"></span> After &mdash; proposed shape
+      </div>
+      <h2 class="anim" style="--i:13"><REPLACE: One-line headline for the proposed state></h2>
+      <p class="section-desc anim" style="--i:14">
+        <REPLACE: One paragraph describing the proposed shape. What's added, what's removed,
+        what's modified. Reference the diagram below.>
+      </p>
+
+      <section class="diagram-shell anim" style="--i:15">
+        <p class="diagram-shell__hint">
+          Same system, with the change applied. Highlights show what moved.
+        </p>
+        <div class="mermaid-wrap">
+          <div class="zoom-controls">
+            <button type="button" data-action="zoom-in" title="Zoom in">+</button>
+            <button type="button" data-action="zoom-out" title="Zoom out">&minus;</button>
+            <button type="button" data-action="zoom-fit" title="Smart fit">&#8634;</button>
+            <button type="button" data-action="zoom-one" title="1:1 zoom">1:1</button>
+            <button type="button" data-action="zoom-expand" title="Open full size">&#x26F6;</button>
+            <span class="zoom-label">Loading...</span>
+          </div>
+          <div class="mermaid-viewport">
+            <div class="mermaid mermaid-canvas"></div>
+          </div>
+        </div>
+        <script type="text/plain" class="diagram-source">
+          graph TD
+            <REPLACE: proposed-state nodes and edges>
+            a["Component A"]
+            b["Component B"]
+            c["Component C (removed)"]
+            d["Component D (new)"]
+            a --> b
+            b --> d
+
+            classDef stable fill:#0284c711,stroke:#0284c744,stroke-width:1.5px
+            classDef new fill:#10b98122,stroke:#10b981,stroke-width:2px
+            classDef removed fill:#ef444411,stroke:#ef444466,stroke-width:1.5px,stroke-dasharray:5 5
+            classDef modified fill:#f59e0b22,stroke:#f59e0b,stroke-width:2px
+            class a,b stable
+            class d new
+            class c removed
+        </script>
+      </section>
+
+      <div class="legend anim" style="--i:16">
+        <div class="legend-item"><div class="legend-swatch" style="background:#10b98122;border:1px solid #10b981"></div>New</div>
+        <div class="legend-item"><div class="legend-swatch" style="background:#f59e0b22;border:1px solid #f59e0b"></div>Modified</div>
+        <div class="legend-item"><div class="legend-swatch" style="background:#ef444411;border:1px dashed #ef444466"></div>Removed</div>
+        <div class="legend-item"><div class="legend-swatch" style="background:#0284c711;border:1px solid #0284c744"></div>Stable</div>
+      </div>
+    </section>
+
+    <!-- ============================== -->
+    <!-- DIFF                            -->
+    <!-- ============================== -->
+    <section id="diff">
+      <div class="sec-head anim" style="--i:17; color:var(--indigo)">
+        <span class="dot" style="background:var(--indigo)"></span> Diff
+      </div>
+
+      <div class="callout anim" style="--i:18">
+        <strong>Added</strong>
+        <ul class="node-list" style="margin-top:6px">
+          <li><REPLACE: New node / file / capability — what it does></li>
+        </ul>
+        <strong style="margin-top:12px;display:inline-block">Removed</strong>
+        <ul class="node-list" style="margin-top:6px">
+          <li><REPLACE: Removed node / dead code — why it goes></li>
+        </ul>
+        <strong style="margin-top:12px;display:inline-block">Modified</strong>
+        <ul class="node-list" style="margin-top:6px">
+          <li><REPLACE: Changed node — what changes about it></li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ============================== -->
+    <!-- OPEN QUESTIONS                  -->
+    <!-- ============================== -->
+    <section id="open-questions">
+      <div class="sec-head anim" style="--i:19; color:var(--amber)">
+        <span class="dot" style="background:var(--amber)"></span> Open questions
+      </div>
+
+      <div class="ve-card c-amber anim" style="--i:20">
+        <div class="ve-card__label">What we don't yet know — investigation needed before committing</div>
+        <ul class="node-list">
+          <li><REPLACE: Question 1 — what investigation will resolve it?></li>
+          <li><REPLACE: Question 2></li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ============================== -->
+    <!-- FORWARD LINKS                   -->
+    <!-- ============================== -->
+    <section id="forward-links">
+      <div class="sec-head anim" style="--i:21; color:var(--slate)">
+        <span class="dot" style="background:var(--slate)"></span> Forward links
+      </div>
+
+      <div class="ve-card c-slate anim" style="--i:22">
+        <div class="ve-card__label">Atlas pages this would update once the change ships</div>
+        <ul class="node-list">
+          <li><a href="<REPLACE: atlas page URL>"><REPLACE: page name></a> — <REPLACE: what would change></li>
+          <li><REPLACE: another atlas page if applicable></li>
+        </ul>
+        <p style="font-size:12px;color:var(--text-dim);margin-top:8px;margin-bottom:0">
+          When this change ships, this list seeds the drift PR / atlas update.
+        </p>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<script src="https://yoniebans.github.io/mermaid-zoom.js" defer></script>
+<script src="https://yoniebans.github.io/scrollspy.js" defer></script>
+<script src="https://yoniebans.github.io/presentation.js" defer></script>
+</body>
+</html>
